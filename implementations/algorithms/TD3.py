@@ -77,8 +77,9 @@ class TD3(object):
         self.critic_target = Critic(state_dim, action_dim).to(device)
         self.critic_target.load_state_dict(self.critic.state_dict())
         self.critic_optimizer = torch.optim.Adam(self.critic.parameters())
-
         self.max_action = max_action
+        self.state_dim = state_dim
+        self.action_dim = action_dim
 
     def select_action(self, state):
         state = torch.FloatTensor(state.reshape((1, -1))).to(device)
@@ -89,9 +90,9 @@ class TD3(object):
         for it in range(iterations):
             x, u, r, d, y = replay_buffer.uniform_sample(batch_size)
 
-            state = torch.FloatTensor(x.reshape((batch_size, 4))).to(device)
-            action = torch.FloatTensor(u.reshape((batch_size, 2))).to(device)
-            next_state = torch.FloatTensor(y.reshape((batch_size, 4))).to(device)
+            state = torch.FloatTensor(x.reshape((batch_size, self.state_dim))).to(device)
+            action = torch.FloatTensor(u.reshape((batch_size, self.action_dim))).to(device)
+            next_state = torch.FloatTensor(y.reshape((batch_size, self.state_dim))).to(device)
             done = torch.FloatTensor(1 - d).to(device)
             reward = torch.FloatTensor(r).to(device)
 

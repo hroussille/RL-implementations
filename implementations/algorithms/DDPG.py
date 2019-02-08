@@ -49,11 +49,12 @@ class DDPG(object):
         self.actor_target = Actor(state_dim, action_dim, max_action).to(device)
         self.actor_target.load_state_dict(self.actor.state_dict())
         self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr=1e-4)
-
         self.critic = Critic(state_dim, action_dim).to(device)
         self.critic_target = Critic(state_dim, action_dim).to(device)
         self.critic_target.load_state_dict(self.critic.state_dict())
         self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), weight_decay=1e-2)
+        self.state_dim = state_dim
+        self.action_dim = action_dim
 
     def select_action(self, state):
         state = torch.FloatTensor(state.reshape(1, -1)).to(device)
@@ -63,11 +64,11 @@ class DDPG(object):
     def train(self, replay_buffer, iterations, batch_size=64, discount=0.99, tau=0.001):
 
         for it in range(iterations):
-            # Sample replay buffer 
-            x, y, u, r, d = replay_buffer.sample(batch_size)
-            state = torch.FloatTensor(x).to(device)
-            action = torch.FloatTensor(u).to(device)
-            next_state = torch.FloatTensor(y).to(device)
+            x, u, r, d, y = replay_buffer.uniform_sample(batch_size)
+
+            state = torch.FloatTensor(x.reshape((batch_size, self.state_dim))).to(device)
+            action = torch.FloatTensor(u.reshape((batch_size, self.action_dim))).to(device)
+            next_state = torch.FloatTensor(y.reshape((batch_size, self.state_dim))).to(device)
             done = torch.FloatTensor(1 - d).to(device)
             reward = torch.FloatTensor(r).to(device)
 
