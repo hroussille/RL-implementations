@@ -17,10 +17,12 @@ def evaluate_policy(policy, eval_episodes=10):
     for i in range(eval_episodes):
 
         print("Evaluation : {}".format(i))
+
         obs = env.reset()
         done = False
 
         while not done:
+            env.render()
             action = policy.select_action(np.array(obs))
             obs, reward, done, _ = env.step(action)
             avg_reward += reward

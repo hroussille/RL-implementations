@@ -48,7 +48,7 @@ class ReplayBuffer():
 
         for exp in experiences:
             states.append(np.array([exp[0]]))
-            actions.append(np.array([exp[1]]))
+            actions.append(exp[1])
             rewards.append(np.array([exp[2]]))
             dones.append(np.array([exp[3]]))
             new_states.append(np.array([exp[4]]))

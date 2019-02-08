@@ -67,6 +67,7 @@ class Critic(nn.Module):
 class TD3(object):
 
     def __init__(self, state_dim, action_dim, max_action):
+
         self.actor = Actor(state_dim, action_dim, max_action).to(device)
         self.actor_target = Actor(state_dim, action_dim, max_action).to(device)
         self.actor_target.load_state_dict(self.actor.state_dict())
@@ -80,23 +81,20 @@ class TD3(object):
         self.max_action = max_action
 
     def select_action(self, state):
-        state = torch.FloatTensor(state).to(device)
+        state = torch.FloatTensor(state.reshape((1, -1))).to(device)
         return self.actor(state).cpu().data.numpy().flatten()
 
     def train(self, replay_buffer, iterations, batch_size=100, discount=0.99, tau=0.005, policy_noise=0.2, noise_clip=0.5, policy_freq=2):
 
         for it in range(iterations):
-            # Sample replay buffer
-            # x, y , u, r , d
-            # Expects tuples of (state, next_state, action, reward, done)
-
             x, u, r, d, y = replay_buffer.uniform_sample(batch_size)
 
-            state = torch.FloatTensor(x).to(device)
-            action = torch.FloatTensor(u).to(device)
-            next_state = torch.FloatTensor(y).to(device)
+            state = torch.FloatTensor(x.reshape((batch_size, 4))).to(device)
+            action = torch.FloatTensor(u.reshape((batch_size, 2))).to(device)
+            next_state = torch.FloatTensor(y.reshape((batch_size, 4))).to(device)
             done = torch.FloatTensor(1 - d).to(device)
             reward = torch.FloatTensor(r).to(device)
+
 
             # Select action according to policy and add clipped noise
             noise = torch.FloatTensor(u).data.normal_(0, policy_noise).to(device)
