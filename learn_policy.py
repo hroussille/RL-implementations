@@ -91,7 +91,7 @@ if __name__ == "__main__":
     else:
         policy = DDPG.DDPG(state_dim, action_dim, max_action)
 
-    replay_buffer = replay_buffer.ReplayBuffer(5000)
+    replay_buffer = replay_buffer.ReplayBuffer(args.replay_size)
 
     # Evaluate untrained policy
     evaluations = [evaluate_policy(policy)]
