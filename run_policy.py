@@ -19,14 +19,14 @@ def run_policy(policy_name="Random",policy_directory=None,environment=None,
         action_dim *= dim_length
     max_action = float(env.action_space.high[0])
 
-    if policy_name == "TD3":
-        policy = TD3.TD3(state_dim,action_dim,max_action)
-        policy.load("TD3_MultiDimensional-v2_0","policies")
-    elif policy_name == "DDPG":
-        policy = DDPG.DDPG(state_dim,action_dim,max_action)
-        policy.load("DDPG_MultiDimensional-v2_0","policies")
-    elif policy_name == "Random":
+    if policy_name == "Random":
         pass
+    else:
+        if policy_name == "TD3":
+            policy = TD3.TD3(state_dim,action_dim,max_action)
+        elif policy_name == "DDPG":
+            policy = DDPG.DDPG(state_dim,action_dim,max_action)
+        policy.load(policy_name + "_" + environment,"policies")
 
     rb = replay_buffer.ReplayBuffer(5000)
     old_state = None

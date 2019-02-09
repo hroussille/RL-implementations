@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     
-    environment = gym_multi_dimensional.dynamic_register(n_dimensions=2,
+    environment = gym_multi_dimensional.dynamic_register(n_dimensions=args.dimensions,
             env_description={},continuous=True,acceleration=True)
     
     replay_buffer = run_policy.run_policy(policy_name=args.policy_name,

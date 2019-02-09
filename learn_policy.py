@@ -64,7 +64,7 @@ if __name__ == "__main__":
     id = gym_multi_dimensional.dynamic_register(n_dimensions=args.dimensions, env_description={}, continuous=True, acceleration=True)
     env = gym.make(id)
 
-    file_name = "%s_%s_%s" % (args.policy_name, id, str(args.seed))
+    file_name = "%s_%s" % (args.policy_name, id)
     print ("---------------------------------------")
     print ("Settings: %s" % (file_name))
     print ("---------------------------------------")
