@@ -26,4 +26,4 @@ if __name__ == "__main__":
             render=args.render,
             verbose=args.verbose)
     
-    vis_2d.visualize(replay_buffer)
+    vis_2d.visualize_RB(replay_buffer)

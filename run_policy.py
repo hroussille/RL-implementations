@@ -23,7 +23,7 @@ def run_policy(policy_name="Random",policy_directory=None,environment=None,
         policy = TD3.TD3(state_dim,action_dim,max_action)
         policy.load("TD3_MultiDimensional-v2_0","policies")
     elif policy_name == "DDPG":
-        policy = TD3.TD3(state_dim,action_dim,max_action)
+        policy = DDPG.DDPG(state_dim,action_dim,max_action)
         policy.load("DDPG_MultiDimensional-v2_0","policies")
     elif policy_name == "Random":
         pass
@@ -42,7 +42,7 @@ def run_policy(policy_name="Random",policy_directory=None,environment=None,
             if policy_name == "Random":
                 action = env.action_space.sample()
             else:
-                action = policy.select_action(np.array(state))
+                action = policy.select_action(np.array(old_state))
             state, reward, done, info = env.step(action)
             rb.push(old_state, action, reward, done, state)
             old_state = state

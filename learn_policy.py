@@ -5,6 +5,8 @@ import argparse
 import os
 
 import gym_multi_dimensional
+from gym_multi_dimensional.visualization import vis_2d
+
 from implementations.algorithms import DDPG
 from implementations.algorithms import TD3
 from implementations.utils import replay_buffer
@@ -44,7 +46,7 @@ if __name__ == "__main__":
     parser.add_argument("--seed", default=0, type=int)					# Sets Gym, PyTorch and Numpy seeds
     parser.add_argument("--start_timesteps", default=1e4, type=int)		# How many time steps purely random policy is run for
     parser.add_argument("--eval_freq", default=5e3, type=float)			# How often (time steps) we evaluate
-    parser.add_argument("--max_timesteps", default=1e3, type=float)		# Max time steps to run environment for
+    parser.add_argument("--max_timesteps", default=1e2, type=float)		# Max time steps to run environment for
     parser.add_argument("--save_models", action="store_true")			# Whether or not models are saved
     parser.add_argument("--expl_noise", default=0.1, type=float)		# Std of Gaussian exploration noise
     parser.add_argument("--batch_size", default=100, type=int)			# Batch size for both actor and critic
@@ -101,6 +103,8 @@ if __name__ == "__main__":
     episode_reward = 0
     done = True
 
+    Q_values = []
+
     while total_timesteps < args.max_timesteps:
 
         if done:
@@ -108,9 +112,9 @@ if __name__ == "__main__":
                         print("Total T: {} Episode Num: {} Episode T: {} Reward: {}".format(total_timesteps, episode_num, episode_timesteps, episode_reward))
 
                         if args.policy_name == "TD3":
-                                policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau, args.policy_noise, args.noise_clip, args.policy_freq)
+                                Q_values.extend(policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau, args.policy_noise, args.noise_clip, args.policy_freq))
                         else:
-                                policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau)
+                                Q_values.extend(policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau))
 
                 # Evaluate episode
                 if timesteps_since_eval >= args.eval_freq:
@@ -152,9 +156,13 @@ if __name__ == "__main__":
         total_timesteps += 1
         timesteps_since_eval += 1
 
+    #vis_2d.visualize_Q(np.array(Q_values))
+
     # Final evaluation
     evaluations.append(evaluate_policy(policy))
     if not os.path.exists("policies"):
         os.makedirs("policies")
     policy.save("%s" % (file_name), directory="./policies")
+    if not os.path.exists("results"):
+        os.makedirs("results")
     np.save("./results/%s" % (file_name), evaluations)

@@ -87,6 +87,7 @@ class TD3(object):
 
     def train(self, replay_buffer, iterations, batch_size=100, discount=0.99, tau=0.005, policy_noise=0.2, noise_clip=0.5, policy_freq=2):
 
+        Q_values = []
         for it in range(iterations):
             x, u, r, d, y = replay_buffer.uniform_sample(batch_size)
 
@@ -109,6 +110,8 @@ class TD3(object):
 
             # Get current Q estimates
             current_Q1, current_Q2 = self.critic(state, action)
+
+            Q_values.extend([ tuple(line) for line in np.c_[(current_Q1.detach().numpy()+current_Q2.detach().numpy())/2,state]  ])
 
             # Compute critic loss
             critic_loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q)
@@ -135,6 +138,7 @@ class TD3(object):
 
                     for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
                             target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
+        return Q_values
 
 
     def save(self, filename, directory):

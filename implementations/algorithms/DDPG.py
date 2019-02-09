@@ -62,7 +62,7 @@ class DDPG(object):
 
 
     def train(self, replay_buffer, iterations, batch_size=64, discount=0.99, tau=0.001):
-
+        Q_values = []
         for it in range(iterations):
             x, u, r, d, y = replay_buffer.uniform_sample(batch_size)
 
@@ -78,6 +78,8 @@ class DDPG(object):
 
             # Get current Q estimate
             current_Q = self.critic(state, action)
+
+            Q_values.extend([ tuple(line) for line in np.c_[current_Q.detach().numpy(),state] ])
 
             # Compute critic loss
             critic_loss = F.mse_loss(current_Q, target_Q)
@@ -101,6 +103,7 @@ class DDPG(object):
 
             for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
                     target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
+        return Q_values
 
 
     def save(self, filename, directory):
