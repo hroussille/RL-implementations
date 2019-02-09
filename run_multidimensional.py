@@ -60,4 +60,4 @@ if __name__ == "__main__":
         policy.load(args.policy_name + "_" + environment,"policies")
         Q_values = policy.Q_values(replay_buffer)
         vis_2d.visualize_Q(Q_values)
-
+        vis_2d.visualize_Q2(Q_values)
