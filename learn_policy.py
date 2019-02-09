@@ -18,13 +18,13 @@ def evaluate_policy(policy, eval_episodes=10):
 
         print("Evaluation : {}".format(i))
 
-        obs = env.reset()
+        state = env.reset()
         done = False
 
         while not done:
             #env.render()
-            action = policy.select_action(np.array(obs))
-            obs, reward, done, _ = env.step(action)
+            action = policy.select_action(np.array(state))
+            state, reward, done, _ = env.step(action)
             avg_reward += reward
             steps = steps + 1
 
@@ -69,16 +69,18 @@ if __name__ == "__main__":
 
     if not os.path.exists("./results"):
             os.makedirs("./results")
-    if args.save_models and not os.path.exists("./pytorch_models"):
-            os.makedirs("./pytorch_models")
 
     # Set seeds
     #env.seed(args.seed)
     #torch.manual_seed(args.seed)
     #np.random.seed(args.seed)
-
-    state_dim = env.observation_space.shape[0] * args.dimensions
-    action_dim = env.action_space.shape[0]
+    
+    state_dim = 1
+    for dim_length in env.observation_space.shape:
+        state_dim *= dim_length
+    action_dim = 1
+    for dim_length in env.action_space.shape:
+        action_dim *= dim_length
     max_action = float(env.action_space.high[0])
 
     # Initialize policy
