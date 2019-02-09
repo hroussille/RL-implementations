@@ -37,7 +37,7 @@ def run_policy(policy_name="Random",policy_directory=None,environment=None,
         i=0
         cur_reward = 0
         while not done:
-            if render==True:
+            if render:
                 env.render()
             if policy_name == "Random":
                 action = env.action_space.sample()
@@ -48,13 +48,13 @@ def run_policy(policy_name="Random",policy_directory=None,environment=None,
             old_state = state
             cur_reward += reward
 
-            if verbose==True:
+            if verbose:
                 print(state,reward,done,info)
         
             avg_reward += reward
             i+=1
 
-        if verbose==True:
+        if verbose:
             print("Episode finished after {} timesteps, final reward : {}".format(i+1,cur_reward))
 
 
