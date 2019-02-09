@@ -1,14 +1,11 @@
 import gym
 import numpy as np
-import argparse
-
-import gym_multi_dimensional
 
 from implementations.algorithms import TD3
 from implementations.algorithms import DDPG
 
 
-def run_policy(policy_name="Random",policy_directory="policies",environment="",
+def run_policy(policy_name="Random",policy_directory=None,environment=None,
         max_timesteps=50,render=True,verbose=True):
 
     env = gym.make(environment)
@@ -62,26 +59,3 @@ def run_policy(policy_name="Random",policy_directory="policies",environment="",
     print("---------------------------------------")
 
     env.close()
-
-
-if __name__ == "__main__":
-    
-    id = gym_multi_dimensional.dynamic_register(n_dimensions=2,
-            env_description={},continuous=True,acceleration=True)
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--policy_name",default="Random")
-    parser.add_argument("--policy_directory", default="policies")
-    parser.add_argument("--environment", default=id)
-    parser.add_argument("--max_timesteps", default=50)
-    parser.add_argument("--render", default=True)
-    parser.add_argument("--verbose", default=True)
-
-    args = parser.parse_args()
-
-    run_policy(policy_name=args.policy_name,
-            policy_directory=args.policy_directory,
-            environment=args.environment,
-            max_timesteps=args.max_timesteps,
-            render=args.render,
-            verbose=args.verbose)
