@@ -57,7 +57,8 @@ if __name__ == "__main__":
     parser.add_argument("--policy_freq", default=2, type=int)			# Frequency of delayed policy updates
     parser.add_argument("--dimensions", default=2, type=int)
     parser.add_argument("--replay_size", default=5000, type=int)
-    parser.add_argument("--new_exp", default=False, type=bool)
+    parser.add_argument("--no-new-exp", dest='new_exp', action="store_false")
+    parser.set_defaults(new_exp=True)
 
     args = parser.parse_args()
 
@@ -73,9 +74,9 @@ if __name__ == "__main__":
             os.makedirs("./results")
 
     # Set seeds
-    #env.seed(args.seed)
-    #torch.manual_seed(args.seed)
-    #np.random.seed(args.seed)
+    env.seed(args.seed)
+    torch.manual_seed(args.seed)
+    np.random.seed(args.seed)
     
     state_dim = 1
     for dim_length in env.observation_space.shape:
