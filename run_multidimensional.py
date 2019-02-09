@@ -1,5 +1,10 @@
 import run_policy
 import argparse
+import gym
+
+from implementations.algorithms import TD3
+from implementations.algorithms import DDPG
+from implementations.utils import replay_buffer
 
 import gym_multi_dimensional
 from gym_multi_dimensional.visualization import vis_2d
@@ -29,3 +34,30 @@ if __name__ == "__main__":
             verbose=args.verbose)
 
     vis_2d.visualize_RB(replay_buffer)
+
+    
+    if args.policy_name == "Random":
+        pass
+    else:
+        
+        env = gym.make(environment)
+        
+        state_dim = 1
+        for dim_length in env.observation_space.shape:
+            state_dim *= dim_length
+        action_dim = 1
+        for dim_length in env.action_space.shape:
+            action_dim *= dim_length
+        max_action = float(env.action_space.high[0])
+
+        env.close()
+
+        if args.policy_name == "TD3":
+            policy = TD3.TD3(state_dim,action_dim,max_action)
+        elif args.policy_name == "DDPG":
+            policy = DDPG.DDPG(state_dim,action_dim,max_action)
+
+        policy.load(args.policy_name + "_" + environment,"policies")
+        Q_values = policy.Q_values(replay_buffer)
+        vis_2d.visualize_Q(Q_values)
+
