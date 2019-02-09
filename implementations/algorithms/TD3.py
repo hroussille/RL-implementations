@@ -87,7 +87,6 @@ class TD3(object):
 
     def train(self, replay_buffer, iterations, batch_size=100, discount=0.99, tau=0.005, policy_noise=0.2, noise_clip=0.5, policy_freq=2):
 
-        Q_values = []
         for it in range(iterations):
             x, u, r, d, y = replay_buffer.uniform_sample(batch_size)
 
@@ -110,13 +109,6 @@ class TD3(object):
 
             # Get current Q estimates
             current_Q1, current_Q2 = self.critic(state, action)
-
-            # Get tensors of interest to cpu memory for GPU / CPU compatibility
-            cpu_Q1 = current_Q1.detach().cpu().numpy()
-            cpu_Q2 = current_Q2.detach().cpu().numpy()
-            cpu_state = state.detach().cpu().numpy()
-
-            Q_values.extend([ tuple(line) for line in np.c_[(cpu_Q1 + cpu_Q2)/2,cpu_state]  ])
 
             # Compute critic loss
             critic_loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q)
@@ -143,7 +135,6 @@ class TD3(object):
 
                     for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
                             target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
-        return Q_values
 
 
     def save(self, filename, directory):
@@ -154,3 +145,23 @@ class TD3(object):
     def load(self, filename, directory):
         self.actor.load_state_dict(torch.load('%s/%s_actor.pth' % (directory, filename)))
         self.critic.load_state_dict(torch.load('%s/%s_critic.pth' % (directory, filename)))
+    
+    
+    def Q_values(self, replay_buffer):
+
+        Q_values = []
+        for replay in replay_buffer:
+
+            state = replay[0].reshape((1, self.state_dim))
+            torch_state = torch.FloatTensor(state).to(device)
+            action = replay[1].reshape((1, self.action_dim))
+            torch_action = torch.FloatTensor(action).to(device)
+
+            current_Q1,current_Q2 = self.critic(torch_state, torch_action)
+            cpu_Q1 = np.asscalar(current_Q1.detach().cpu().numpy())
+            cpu_Q2 = np.asscalar(current_Q2.detach().cpu().numpy())
+            q_value = [(cpu_Q1+cpu_Q2)/2]
+            q_value.extend(state.reshape(self.state_dim))
+            Q_values.append(q_value)
+
+        return np.array(Q_values)

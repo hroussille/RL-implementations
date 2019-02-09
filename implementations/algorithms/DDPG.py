@@ -62,7 +62,6 @@ class DDPG(object):
 
 
     def train(self, replay_buffer, iterations, batch_size=64, discount=0.99, tau=0.001):
-        Q_values = []
         for it in range(iterations):
             x, u, r, d, y = replay_buffer.uniform_sample(batch_size)
 
@@ -78,12 +77,6 @@ class DDPG(object):
 
             # Get current Q estimate
             current_Q = self.critic(state, action)
-
-            # Get tensors of interest to cpu memory for GPU / CPU compatibility
-            cpu_Q = current_Q.detach().cpu().numpy()
-            cpu_state = state.detach().cpu().numpy()
-
-            Q_values.extend([ tuple(line) for line in np.c_[cpu_Q, cpu_state] ])
 
             # Compute critic loss
             critic_loss = F.mse_loss(current_Q, target_Q)
@@ -107,7 +100,6 @@ class DDPG(object):
 
             for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
                     target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
-        return Q_values
 
 
     def save(self, filename, directory):
@@ -118,3 +110,22 @@ class DDPG(object):
     def load(self, filename, directory):
         self.actor.load_state_dict(torch.load('%s/%s_actor.pth' % (directory, filename)))
         self.critic.load_state_dict(torch.load('%s/%s_critic.pth' % (directory, filename)))
+    
+    
+    def Q_values(self, replay_buffer):
+
+        Q_values = []
+        for replay in replay_buffer:
+
+            state = replay[0].reshape((1, self.state_dim))
+            torch_state = torch.FloatTensor(state).to(device)
+            action = replay[1].reshape((1, self.action_dim))
+            torch_action = torch.FloatTensor(action).to(device)
+
+            current_Q = self.critic(torch_state, torch_action)
+            cpu_Q = np.asscalar(current_Q.detach().cpu().numpy())
+            q_value = [cpu_Q]
+            q_value.extend(state.reshape(self.state_dim))
+            Q_values.append(q_value)
+
+        return np.array(Q_values)

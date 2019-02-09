@@ -112,9 +112,9 @@ if __name__ == "__main__":
                         print("Total T: {} Episode Num: {} Episode T: {} Reward: {}".format(total_timesteps, episode_num, episode_timesteps, episode_reward))
 
                         if args.policy_name == "TD3":
-                                Q_values.extend(policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau, args.policy_noise, args.noise_clip, args.policy_freq))
+                                policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau, args.policy_noise, args.noise_clip, args.policy_freq)
                         else:
-                                Q_values.extend(policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau))
+                                policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau)
 
                 # Evaluate episode
                 if timesteps_since_eval >= args.eval_freq:
@@ -156,7 +156,8 @@ if __name__ == "__main__":
         total_timesteps += 1
         timesteps_since_eval += 1
 
-    #vis_2d.visualize_Q(np.array(Q_values))
+    Q_values = policy.Q_values(replay_buffer)
+    vis_2d.visualize_Q(Q_values)
 
     # Final evaluation
     evaluations.append(evaluate_policy(policy))
