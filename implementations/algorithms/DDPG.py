@@ -79,7 +79,11 @@ class DDPG(object):
             # Get current Q estimate
             current_Q = self.critic(state, action)
 
-            Q_values.extend([ tuple(line) for line in np.c_[current_Q.detach().numpy(),state] ])
+            # Get tensors of interest to cpu memory for GPU / CPU compatibility
+            cpu_Q = current_Q.detach().cpu().numpy()
+            cpu_state = state.detach().cpu().numpy()
+
+            Q_values.extend([ tuple(line) for line in np.c_[cpu_Q, cpu_state] ])
 
             # Compute critic loss
             critic_loss = F.mse_loss(current_Q, target_Q)

@@ -111,7 +111,12 @@ class TD3(object):
             # Get current Q estimates
             current_Q1, current_Q2 = self.critic(state, action)
 
-            Q_values.extend([ tuple(line) for line in np.c_[(current_Q1.detach().numpy()+current_Q2.detach().numpy())/2,state]  ])
+            # Get tensors of interest to cpu memory for GPU / CPU compatibility
+            cpu_Q1 = current_Q1.detach().cpu().numpy()
+            cpu_Q2 = current_Q2.detach().cpu().numpy()
+            cpu_state = state.detach().cpu().numpy()
+
+            Q_values.extend([ tuple(line) for line in np.c_[(cpu_Q1 + cpu_Q2)/2,cpu_state]  ])
 
             # Compute critic loss
             critic_loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q)
