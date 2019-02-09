@@ -2,4 +2,4 @@
 *.swp
 *.egg-info
 results/
-pytorch_models/
+*.pth

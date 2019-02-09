@@ -1,10 +1,13 @@
+import os
 import gym
 import gym_multi_dimensional
 import numpy as np
 from implementations.algorithms import TD3
+from implementations.algorithms import DDPG
 
 
-id = gym_multi_dimensional.dynamic_register(n_dimensions=2,env_description={},continuous=True,acceleration=True)
+id = gym_multi_dimensional.dynamic_register(n_dimensions=2,env_description={},
+        continuous=True,acceleration=True)
 env = gym.make(id)
 
 state_dim = env.observation_space.shape[0]*env.observation_space.shape[1]
@@ -12,7 +15,7 @@ action_dim = env.action_space.shape[0]
 max_action = float(env.action_space.high[0])
 
 policy = TD3.TD3(state_dim,action_dim,max_action)
-policy.load("TD3_MultiDimensional-v2_0","pytorch_models")
+policy.load("TD3_MultiDimensional-v2_0","policies")
 
 avg_reward = 0.
 for _ in range(50):
