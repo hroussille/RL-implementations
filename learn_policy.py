@@ -46,7 +46,7 @@ if __name__ == "__main__":
     parser.add_argument("--seed", default=0, type=int)					# Sets Gym, PyTorch and Numpy seeds
     parser.add_argument("--start_timesteps", default=1e4, type=int)		# How many time steps purely random policy is run for
     parser.add_argument("--eval_freq", default=5e3, type=float)			# How often (time steps) we evaluate
-    parser.add_argument("--max_timesteps", default=1e2, type=float)		# Max time steps to run environment for
+    parser.add_argument("--max_timesteps", default=1e3, type=float)		# Max time steps to run environment for
     parser.add_argument("--save_models", action="store_true")			# Whether or not models are saved
     parser.add_argument("--expl_noise", default=0.1, type=float)		# Std of Gaussian exploration noise
     parser.add_argument("--batch_size", default=100, type=int)			# Batch size for both actor and critic
@@ -91,7 +91,7 @@ if __name__ == "__main__":
     else:
         policy = DDPG.DDPG(state_dim, action_dim, max_action)
 
-    replay_buffer = replay_buffer.ReplayBuffer(5000)
+    replay_buffer = replay_buffer.ReplayBuffer(args.replay_size)
 
     # Evaluate untrained policy
     evaluations = [evaluate_policy(policy)]
@@ -147,8 +147,9 @@ if __name__ == "__main__":
         done_bool = 0 if episode_timesteps + 1 == env._max_episode_steps else float(done)
         episode_reward += reward
 
-        # Store data in replay buffer
-        replay_buffer.push(obs, action, reward, done_bool, new_obs)
+        # Push experience to rb if in exploration phase and in exploitation if new_exp is True
+        if total_timesteps < args.start_timesteps or (total_timesteps >= args.start_timesteps and args.new_exp == True):
+            replay_buffer.push(obs, action, reward, done_bool, new_obs)
 
         obs = new_obs
 

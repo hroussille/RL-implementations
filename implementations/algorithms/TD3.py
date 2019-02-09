@@ -72,7 +72,6 @@ class TD3(object):
         self.actor_target = Actor(state_dim, action_dim, max_action).to(device)
         self.actor_target.load_state_dict(self.actor.state_dict())
         self.actor_optimizer = torch.optim.Adam(self.actor.parameters())
-
         self.critic = Critic(state_dim, action_dim).to(device)
         self.critic_target = Critic(state_dim, action_dim).to(device)
         self.critic_target.load_state_dict(self.critic.state_dict())
@@ -95,7 +94,6 @@ class TD3(object):
             next_state = torch.FloatTensor(y.reshape((batch_size, self.state_dim))).to(device)
             done = torch.FloatTensor(1 - d).to(device)
             reward = torch.FloatTensor(r).to(device)
-
 
             # Select action according to policy and add clipped noise
             noise = torch.FloatTensor(u).data.normal_(0, policy_noise).to(device)
