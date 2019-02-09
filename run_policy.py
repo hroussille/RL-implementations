@@ -3,6 +3,7 @@ import numpy as np
 
 from implementations.algorithms import TD3
 from implementations.algorithms import DDPG
+from implementations.utils import replay_buffer
 
 
 def run_policy(policy_name="Random",policy_directory=None,environment=None,
@@ -27,10 +28,11 @@ def run_policy(policy_name="Random",policy_directory=None,environment=None,
     elif policy_name == "Random":
         pass
 
-
+    rb = replay_buffer.ReplayBuffer(5000)
+    old_state = None
     avg_reward = 0.
     for _ in range(max_timesteps):
-        state = env.reset()
+        old_state = env.reset()
         done = False
         i=0
         cur_reward = 0
@@ -42,6 +44,8 @@ def run_policy(policy_name="Random",policy_directory=None,environment=None,
             else:
                 action = policy.select_action(np.array(state))
             state, reward, done, info = env.step(action)
+            rb.push(old_state, action, reward, done, state)
+            old_state = state
             cur_reward += reward
 
             if verbose==True:
@@ -59,3 +63,4 @@ def run_policy(policy_name="Random",policy_directory=None,environment=None,
     print("---------------------------------------")
 
     env.close()
+    return rb

@@ -2,6 +2,7 @@ import run_policy
 import argparse
 
 import gym_multi_dimensional
+from gym_multi_dimensional.visualization import vis_2d
 
 if __name__ == "__main__":
         
@@ -25,4 +26,4 @@ if __name__ == "__main__":
             render=args.render,
             verbose=args.verbose)
     
-    #vis_2d.visualize(rb)
+    vis_2d.visualize(replay_buffer)
