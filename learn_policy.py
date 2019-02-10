@@ -159,6 +159,7 @@ if __name__ == "__main__":
         timesteps_since_eval += 1
 
     Q_values = policy.Q_values(replay_buffer)
+
     vis_2d.visualize_Q(Q_values)
     vis_2d.visualize_Q2(Q_values)
 

@@ -143,8 +143,7 @@ class TD3(object):
     def load(self, filename, directory):
         self.actor.load_state_dict(torch.load('%s/%s_actor.pth' % (directory, filename)))
         self.critic.load_state_dict(torch.load('%s/%s_critic.pth' % (directory, filename)))
-    
-    
+
     def Q_values(self, replay_buffer):
 
         Q_values = []
@@ -152,7 +151,8 @@ class TD3(object):
 
             state = replay[0].reshape((1, self.state_dim))
             torch_state = torch.FloatTensor(state).to(device)
-            action = replay[1].reshape((1, self.action_dim))
+
+            action = np.array([self.select_action(state)])
             torch_action = torch.FloatTensor(action).to(device)
 
             current_Q1,current_Q2 = self.critic(torch_state, torch_action)

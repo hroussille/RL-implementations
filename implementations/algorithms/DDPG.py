@@ -119,7 +119,8 @@ class DDPG(object):
 
             state = replay[0].reshape((1, self.state_dim))
             torch_state = torch.FloatTensor(state).to(device)
-            action = replay[1].reshape((1, self.action_dim))
+
+            action = np.array([self.select_action(state)])
             torch_action = torch.FloatTensor(action).to(device)
 
             current_Q = self.critic(torch_state, torch_action)
