@@ -40,6 +40,6 @@ python analyze_multi_policy.py --max_episodes 1000 --buffer_size=500000 --batch_
 ### on standards gym environments
 
 ```sh
-python learn_policy.py --policy-name DDPG --environment 'MountainCarContinuous-v0'
-python run_policy.py --policy-name DDPG --environment 'MountainCarContinuous-v0'
+python learn_policy.py --policy_name DDPG --environment 'MountainCarContinuous-v0'
+python run_policy.py --policy_name DDPG --environment 'MountainCarContinuous-v0'
 ```
