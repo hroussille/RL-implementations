@@ -32,7 +32,7 @@ you can add to the previous command line to run it quickly and only see the gene
 ```sh
 --no-render --quiet
 ```
-To analyse with an existing policy, a random generated replay buffer :
+To analyse with an existing policy on a random generated replay buffer :
 ```sh
 python analyze_multi_policy.py --max_episodes 1000 --buffer_size=500000 --batch_size 1000 --quiet --no-render --policy_name DDPG
 ```
@@ -40,6 +40,6 @@ python analyze_multi_policy.py --max_episodes 1000 --buffer_size=500000 --batch_
 ### on standards gym environments
 
 ```sh
-python learn_policy.py --environment 'MountainCarContinuous-v0'
-python run_policy.py --environment 'MountainCarContinuous-v0'
+python learn_policy.py --policy-name DDPG --environment 'MountainCarContinuous-v0'
+python run_policy.py --policy-name DDPG --environment 'MountainCarContinuous-v0'
 ```
