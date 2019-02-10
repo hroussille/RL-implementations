@@ -61,9 +61,6 @@ def learn_policy(policy_name="DDPG",
     print ("Settings: %s" % (file_name))
     print ("---------------------------------------")
 
-    if not os.path.exists("./results"):
-            os.makedirs("./results")
-
     # Set seeds
     env.seed(seed)
     torch.manual_seed(seed)
@@ -131,13 +128,11 @@ def learn_policy(policy_name="DDPG",
 
         # Perform action
         new_obs, reward, done, _ = env.step(action)
-        #env.render()
-        done_bool = 0 if episode_timesteps + 1 == env._max_episode_steps else float(done)
         episode_reward += reward
 
         # Push experience to rb if in exploration phase and in exploitation if new_exp is True
         if total_timesteps < start_timesteps or (total_timesteps >= start_timesteps and new_exp == True):
-            rb.push(obs, action, reward, done_bool, new_obs)
+            rb.push(obs, action, reward, done, new_obs)
 
         obs = new_obs
 
@@ -159,7 +154,7 @@ def learn_policy(policy_name="DDPG",
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--policy_name",default="Random")
+    parser.add_argument("--policy_name",default="DDPG")
     parser.add_argument("--policy_directory", default="policies")
     parser.add_argument("--seed", default=0, type=int)              #seed
     parser.add_argument("--environment", default="MountainCarContinuous-v0")

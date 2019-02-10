@@ -12,7 +12,7 @@ from gym_multi_dimensional.visualization import vis_2d
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--policy_name",default="Random")
+    parser.add_argument("--policy_name",default="DDPG")
     parser.add_argument("--policy_directory", default="policies")
     parser.add_argument("--seed", default=0, type=int)              #seed
     parser.add_argument("--dimensions", default=2, type=int)
