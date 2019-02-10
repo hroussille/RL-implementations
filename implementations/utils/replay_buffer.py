@@ -4,9 +4,13 @@ import copy
 
 class ReplayBuffer():
 
-    def __init__(self, buffer_size):
+    def __init__(self, buffer_size,sample=None):
         self.buffer_size = buffer_size
         self.buffer = collections.deque(maxlen=self.buffer_size)
+        if sample != None:
+            for i in range(sample[0].shape[0]):
+                self.push(sample[0][i],sample[1][i],sample[2][i],
+                        sample[3][i],sample[4][i])
 
     def push(self, state, action, reward, done, new_state, overwrite=True):
 
@@ -47,13 +51,15 @@ class ReplayBuffer():
         new_states = []
 
         for exp in experiences:
-            states.append(np.array([exp[0]]))
+            states.append(exp[0])
             actions.append(exp[1])
-            rewards.append(np.array([exp[2]]))
-            dones.append(np.array([exp[3]]))
-            new_states.append(np.array([exp[4]]))
+            rewards.append(exp[2])
+            dones.append(exp[3])
+            new_states.append(exp[4])
 
-        return np.array(states), np.array(actions), np.array(rewards), np.array(dones), np.array(new_states)
+        return (np.array(states), np.array(actions), np.array(rewards),
+                np.array(dones), np.array(new_states))
+
 
     def clear(self):
         self.buffer.clear()
