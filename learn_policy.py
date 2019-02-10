@@ -115,6 +115,8 @@ def learn_policy(policy_name="DDPG",
         new_obs, reward, done, _ = env.step(action)
         episode_reward += reward
 
+        rb.push(obs, action, reward, done, new_obs)
+
         obs = new_obs
 
         episode_timesteps += 1
