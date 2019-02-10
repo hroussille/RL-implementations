@@ -52,10 +52,10 @@ if __name__ == "__main__":
 
     print("visualize RB")
 
-    vis_2d.visualize_RB(rb_sample)
-    
+    vis_2d.visualize_RB(rb)
+
     env = gym.make(environment)
-    
+
     state_dim = 1
     for dim_length in env.observation_space.shape:
         state_dim *= dim_length

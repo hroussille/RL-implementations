@@ -3,13 +3,18 @@ import torch
 import gym
 import os
 import argparse
+import matplotlib.pyplot as plt
 
 from implementations.algorithms import DDPG
 from implementations.algorithms import TD3
 from implementations.utils import replay_buffer
 
+def visualize_training(evaluations):
+    plt.plot(evaluations)
+    plt.show()
+
 # Runs policy for X episodes and returns average reward
-def evaluate_policy(policy, env, eval_episodes=10):
+def evaluate_policy(policy, env, eval_episodes=50):
     avg_reward = 0.
     steps = 0
 
@@ -29,7 +34,7 @@ def evaluate_policy(policy, env, eval_episodes=10):
             if steps > env._max_episode_steps:
                 done = True
 
-    avg_reward /= eval_episodes
+    avg_reward /= steps
 
     print ("---------------------------------------")
     print ("Evaluation over %d episodes: %f" % (eval_episodes, avg_reward))
@@ -142,13 +147,16 @@ def learn_policy(policy_name="DDPG",
 
     # Final evaluation
     evaluations.append(evaluate_policy(policy,env))
+
     if not os.path.exists(policy_directory):
         os.makedirs(policy_directory)
     policy.save("%s" % (file_name), directory=policy_directory)
     if not os.path.exists("results"):
         os.makedirs("results")
     np.save("results/%s" % (file_name), evaluations)
-    
+
+    visualize_training(evaluations)
+
     return rb
 
 if __name__ == "__main__":
