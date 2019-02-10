@@ -21,8 +21,6 @@ def evaluate_policy(policy, env, eval_episodes=50):
 
     for i in range(eval_episodes):
 
-        print("Evaluation : {}".format(i))
-
         state = env.reset()
         done = False
 
@@ -100,23 +98,51 @@ def learn_policy(policy_name="DDPG",
     done = True
 
     Q_values = []
+    
+    while total_timesteps < start_timesteps:
+
+        if done:
+            # Reset environment
+            obs = env.reset()
+            done = False
+            episode_reward = 0
+            episode_timesteps = 0
+            episode_num += 1
+
+        action = env.action_space.sample()
+
+        # Perform action
+        new_obs, reward, done, _ = env.step(action)
+        episode_reward += reward
+
+        # Push experience to rb if in exploration phase and in exploitation if new_exp is True
+        if total_timesteps < start_timesteps or (total_timesteps >= start_timesteps and new_exp == True):
+            rb.push(obs, action, reward, done, new_obs)
+
+        obs = new_obs
+
+        episode_timesteps += 1
+        total_timesteps += 1
+        timesteps_since_eval += 1
+
+    ## apply filtre to replay_buffer
 
     while total_timesteps < max_timesteps:
 
         if done:
-                if total_timesteps != 0:
-                        print("Total T: {} Episode Num: {} Episode T: {} Reward: {}".format(total_timesteps, episode_num, episode_timesteps, episode_reward))
+            if total_timesteps != 0:
+                print("Total T: {} Episode Num: {} Episode T: {} Reward: {}".format(total_timesteps, episode_num, episode_timesteps, episode_reward))
 
-                        if policy_name == "TD3":
-                                policy.train(rb, episode_timesteps, batch_size, discount, tau, policy_noise, noise_clip, policy_freq)
-                        else:
-                                policy.train(rb, episode_timesteps, batch_size, discount, tau)
+                if policy_name == "TD3":
+                    policy.train(rb, episode_timesteps, batch_size, discount, tau, policy_noise, noise_clip, policy_freq)
+                else:
+                    policy.train(rb, episode_timesteps, batch_size, discount, tau)
 
                 # Evaluate episode
                 if timesteps_since_eval >= eval_freq:
-                        timesteps_since_eval %= eval_freq
-                        evaluations.append(evaluate_policy(policy,env))
-                        np.save("./results/%s" % (file_name), evaluations)
+                    timesteps_since_eval %= eval_freq
+                    evaluations.append(evaluate_policy(policy,env))
+                    np.save("./results/%s" % (file_name), evaluations)
 
                 # Reset environment
                 obs = env.reset()
@@ -126,19 +152,16 @@ def learn_policy(policy_name="DDPG",
                 episode_num += 1
 
         # Select action randomly or according to policy
-        if total_timesteps < start_timesteps:
-                action = env.action_space.sample()
-        else:
-                action = policy.select_action(np.array(obs))
-                if expl_noise != 0:
-                        action = (action + np.random.normal(0, expl_noise, size=env.action_space.shape[0])).clip(env.action_space.low, env.action_space.high)
+        action = policy.select_action(np.array(obs))
+        if expl_noise != 0:
+            action = (action + np.random.normal(0, expl_noise, size=env.action_space.shape[0])).clip(env.action_space.low, env.action_space.high)
 
         # Perform action
         new_obs, reward, done, _ = env.step(action)
         episode_reward += reward
 
         # Push experience to rb if in exploration phase and in exploitation if new_exp is True
-        if total_timesteps < start_timesteps or (total_timesteps >= start_timesteps and new_exp == True):
+        if new_exp == True:
             rb.push(obs, action, reward, done, new_obs)
 
         obs = new_obs
