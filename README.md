@@ -18,9 +18,11 @@ And to provide additional functionalities related with :
 
 ## Usage Examples
 
-To quickly learn a policy with DDPG on our 2D environment :
+### on our custom gym environment
+
+To quickly learn a policy with DDPG on our 2D env :
 ```sh
-python learn_policy.py --max_timesteps 10000 --policy_name DDPG
+python learn_multidimensional.py --max_timesteps 10000 --policy_name DDPG
 ```
 To run a policy that has been learn, and see the exploration and the action values:
 ```sh
@@ -33,4 +35,11 @@ you can add to the previous command line to run it quickly and only see the gene
 To analyse with an existing policy, a random generated replay buffer :
 ```sh
 python analyze_multi_policy.py --max_episodes 1000 --buffer_size=500000 --batch_size 1000 --quiet --no-render --policy_name DDPG
+```
+
+### on standards gym environments
+
+```sh
+python learn_policy.py --environment 'MountainCarContinuous-v0'
+python run_policy.py --environment 'MountainCarContinuous-v0'
 ```
