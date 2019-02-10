@@ -1,18 +1,14 @@
 import numpy as np
 import torch
 import gym
-import argparse
 import os
-
-import gym_multi_dimensional
-from gym_multi_dimensional.visualization import vis_2d
 
 from implementations.algorithms import DDPG
 from implementations.algorithms import TD3
 from implementations.utils import replay_buffer
 
 # Runs policy for X episodes and returns average reward
-def evaluate_policy(policy, eval_episodes=10):
+def evaluate_policy(policy, env, eval_episodes=10):
     avg_reward = 0.
     steps = 0
 
@@ -24,7 +20,6 @@ def evaluate_policy(policy, eval_episodes=10):
         done = False
 
         while not done:
-            #env.render()
             action = policy.select_action(np.array(state))
             state, reward, done, _ = env.step(action)
             avg_reward += reward
@@ -40,32 +35,27 @@ def evaluate_policy(policy, eval_episodes=10):
     print ("---------------------------------------")
     return avg_reward
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--policy_name", default="TD3")					# Policy name
-    parser.add_argument("--seed", default=0, type=int)					# Sets Gym, PyTorch and Numpy seeds
-    parser.add_argument("--start_timesteps", default=1e4, type=int)		# How many time steps purely random policy is run for
-    parser.add_argument("--eval_freq", default=5e3, type=float)			# How often (time steps) we evaluate
-    parser.add_argument("--max_timesteps", default=1e3, type=float)		# Max time steps to run environment for
-    parser.add_argument("--save_models", action="store_true")			# Whether or not models are saved
-    parser.add_argument("--expl_noise", default=0.1, type=float)		# Std of Gaussian exploration noise
-    parser.add_argument("--batch_size", default=100, type=int)			# Batch size for both actor and critic
-    parser.add_argument("--discount", default=0.99, type=float)			# Discount factor
-    parser.add_argument("--tau", default=0.005, type=float)				# Target network update rate
-    parser.add_argument("--policy_noise", default=0.2, type=float)		# Noise added to target policy during critic update
-    parser.add_argument("--noise_clip", default=0.5, type=float)		# Range to clip target policy noise
-    parser.add_argument("--policy_freq", default=2, type=int)			# Frequency of delayed policy updates
-    parser.add_argument("--dimensions", default=2, type=int)
-    parser.add_argument("--replay_size", default=5000, type=int)
-    parser.add_argument("--no-new-exp", dest='new_exp', action="store_false")
-    parser.set_defaults(new_exp=True)
 
-    args = parser.parse_args()
+def learn_policy(policy_name="DDPG",
+            policy_directory="policies",
+            seed=0,
+            environment=None,
+            eval_freq=5e3,
+            start_timesteps=1e3,
+            max_timesteps=1e4,
+            buffer_size=5000,
+            new_exp=True,
+            expl_noise=0.1,
+            batch_size=100,
+            discount=0.99,
+            tau=0.005,
+            policy_noise=0.2,
+            noise_clip=0.5,
+            policy_freq=2):
 
-    id = gym_multi_dimensional.dynamic_register(n_dimensions=args.dimensions, env_description={}, continuous=True, acceleration=True)
-    env = gym.make(id)
+    env = gym.make(environment)
 
-    file_name = "%s_%s" % (args.policy_name, id)
+    file_name = "%s_%s" % (policy_name, id)
     print ("---------------------------------------")
     print ("Settings: %s" % (file_name))
     print ("---------------------------------------")
@@ -74,9 +64,9 @@ if __name__ == "__main__":
             os.makedirs("./results")
 
     # Set seeds
-    env.seed(args.seed)
-    torch.manual_seed(args.seed)
-    np.random.seed(args.seed)
+    env.seed(seed)
+    torch.manual_seed(seed)
+    np.random.seed(seed)
     
     state_dim = 1
     for dim_length in env.observation_space.shape:
@@ -87,15 +77,15 @@ if __name__ == "__main__":
     max_action = float(env.action_space.high[0])
 
     # Initialize policy
-    if args.policy_name == "TD3":
+    if policy_name == "TD3":
         policy = TD3.TD3(state_dim, action_dim, max_action)
     else:
         policy = DDPG.DDPG(state_dim, action_dim, max_action)
 
-    replay_buffer = replay_buffer.ReplayBuffer(args.replay_size)
+    rb = replay_buffer.ReplayBuffer(buffer_size)
 
     # Evaluate untrained policy
-    evaluations = [evaluate_policy(policy)]
+    evaluations = [evaluate_policy(policy,env)]
 
     total_timesteps = 0
     timesteps_since_eval = 0
@@ -106,25 +96,21 @@ if __name__ == "__main__":
 
     Q_values = []
 
-    while total_timesteps < args.max_timesteps:
+    while total_timesteps < max_timesteps:
 
         if done:
                 if total_timesteps != 0:
                         print("Total T: {} Episode Num: {} Episode T: {} Reward: {}".format(total_timesteps, episode_num, episode_timesteps, episode_reward))
 
-                        if args.policy_name == "TD3":
-                                policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau, args.policy_noise, args.noise_clip, args.policy_freq)
+                        if policy_name == "TD3":
+                                policy.train(rb, episode_timesteps, batch_size, discount, tau, policy_noise, noise_clip, policy_freq)
                         else:
-                                policy.train(replay_buffer, episode_timesteps, args.batch_size, args.discount, args.tau)
+                                policy.train(rb, episode_timesteps, batch_size, discount, tau)
 
                 # Evaluate episode
-                if timesteps_since_eval >= args.eval_freq:
-                        timesteps_since_eval %= args.eval_freq
-                        evaluations.append(evaluate_policy(policy))
-
-                        if args.save_models:
-                            policy.save(file_name, directory="./pytorch_models")
-
+                if timesteps_since_eval >= eval_freq:
+                        timesteps_since_eval %= eval_freq
+                        evaluations.append(evaluate_policy(policy,env))
                         np.save("./results/%s" % (file_name), evaluations)
 
                 # Reset environment
@@ -135,12 +121,12 @@ if __name__ == "__main__":
                 episode_num += 1
 
         # Select action randomly or according to policy
-        if total_timesteps < args.start_timesteps:
+        if total_timesteps < start_timesteps:
                 action = env.action_space.sample()
         else:
                 action = policy.select_action(np.array(obs))
-                if args.expl_noise != 0:
-                        action = (action + np.random.normal(0, args.expl_noise, size=env.action_space.shape[0])).clip(env.action_space.low, env.action_space.high)
+                if expl_noise != 0:
+                        action = (action + np.random.normal(0, expl_noise, size=env.action_space.shape[0])).clip(env.action_space.low, env.action_space.high)
 
         # Perform action
         new_obs, reward, done, _ = env.step(action)
@@ -149,8 +135,8 @@ if __name__ == "__main__":
         episode_reward += reward
 
         # Push experience to rb if in exploration phase and in exploitation if new_exp is True
-        if total_timesteps < args.start_timesteps or (total_timesteps >= args.start_timesteps and args.new_exp == True):
-            replay_buffer.push(obs, action, reward, done_bool, new_obs)
+        if total_timesteps < start_timesteps or (total_timesteps >= start_timesteps and new_exp == True):
+            rb.push(obs, action, reward, done_bool, new_obs)
 
         obs = new_obs
 
@@ -158,16 +144,13 @@ if __name__ == "__main__":
         total_timesteps += 1
         timesteps_since_eval += 1
 
-    Q_values = policy.Q_values(replay_buffer)
-
-    vis_2d.visualize_Q_arrow(Q_values)
-    vis_2d.visualize_Q_contour(Q_values)
-
     # Final evaluation
-    evaluations.append(evaluate_policy(policy))
-    if not os.path.exists("policies"):
-        os.makedirs("policies")
-    policy.save("%s" % (file_name), directory="./policies")
+    evaluations.append(evaluate_policy(policy,env))
+    if not os.path.exists(policy_directory):
+        os.makedirs(policy_directory)
+    policy.save("%s" % (file_name), directory=policy_directory)
     if not os.path.exists("results"):
         os.makedirs("results")
-    np.save("./results/%s" % (file_name), evaluations)
+    np.save("results/%s" % (file_name), evaluations)
+    
+    return rb
