@@ -7,7 +7,7 @@ from implementations.utils import replay_buffer
 
 
 def run_policy(policy_name="Random",policy_directory=None,environment=None,
-        max_timesteps=50,render=True,verbose=True):
+        max_episodes=50,buffer_size=5000,render=True,verbose=True):
 
     env = gym.make(environment)
 
@@ -28,10 +28,10 @@ def run_policy(policy_name="Random",policy_directory=None,environment=None,
             policy = DDPG.DDPG(state_dim,action_dim,max_action)
         policy.load(policy_name + "_" + environment,"policies")
 
-    rb = replay_buffer.ReplayBuffer(5000)
+    rb = replay_buffer.ReplayBuffer(buffer_size)
     old_state = None
     avg_reward = 0.
-    for _ in range(max_timesteps):
+    for _ in range(max_episodes):
         old_state = env.reset()
         done = False
         i=0
@@ -59,7 +59,7 @@ def run_policy(policy_name="Random",policy_directory=None,environment=None,
 
 
     print("---------------------------------------")
-    print("Evaluation over %d episodes: %f" % (max_timesteps, avg_reward))
+    print("Evaluation over %d episodes: %f" % (max_episodes, avg_reward))
     print("---------------------------------------")
 
     env.close()
