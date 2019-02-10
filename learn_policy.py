@@ -98,7 +98,7 @@ def learn_policy(policy_name="DDPG",
     done = True
 
     Q_values = []
-    
+
     while total_timesteps < start_timesteps:
 
         if done:
@@ -114,10 +114,6 @@ def learn_policy(policy_name="DDPG",
         # Perform action
         new_obs, reward, done, _ = env.step(action)
         episode_reward += reward
-
-        # Push experience to rb if in exploration phase and in exploitation if new_exp is True
-        if total_timesteps < start_timesteps or (total_timesteps >= start_timesteps and new_exp == True):
-            rb.push(obs, action, reward, done, new_obs)
 
         obs = new_obs
 
