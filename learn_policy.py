@@ -9,8 +9,9 @@ from implementations.algorithms import DDPG
 from implementations.algorithms import TD3
 from implementations.utils import replay_buffer
 
-def visualize_training(evaluations):
-    plt.plot(evaluations)
+def visualize_training(evaluations, freq=1):
+    x = np.arange(0, freq * len(evaluations), freq)
+    plt.plot(x, evaluations)
     plt.show()
 
 # Runs policy for X episodes and returns average reward
@@ -155,7 +156,7 @@ def learn_policy(policy_name="DDPG",
         os.makedirs("results")
     np.save("results/%s" % (file_name), evaluations)
 
-    visualize_training(evaluations)
+    visualize_training(evaluations, eval_freq)
 
     return rb
 
