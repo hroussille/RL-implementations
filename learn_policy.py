@@ -62,7 +62,8 @@ def learn_policy(policy_name="DDPG",
 
     env = gym.make(environment)
 
-    file_name = "%s_%s" % (policy_name, id)
+    file_name = "%s_%s" % (policy_name, environment)
+
     print ("---------------------------------------")
     print ("Settings: %s" % (file_name))
     print ("---------------------------------------")
