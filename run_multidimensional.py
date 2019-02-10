@@ -16,7 +16,7 @@ if __name__ == "__main__":
     parser.add_argument("--policy_directory", default="policies")
     parser.add_argument("--dimensions", default=2, type=int)
     parser.add_argument("--max_timesteps", default=50, type=int)
-    parser.add_argument('--non-verbose', dest='verbose', action='store_false')
+    parser.add_argument('--quiet', dest='verbose', action='store_false')
     parser.set_defaults(verbose=True)
     parser.add_argument('--velocity', dest='acceleration', action='store_false')
     parser.add_argument('--acceleration', dest='acceleration', action='store_true')
@@ -65,5 +65,5 @@ if __name__ == "__main__":
 
         policy.load(args.policy_name + "_" + environment,"policies")
         Q_values = policy.Q_values(replay_buffer)
-        vis_2d.visualize_Q(Q_values)
-        vis_2d.visualize_Q2(Q_values)
+        vis_2d.visualize_Q_arrow(Q_values)
+        vis_2d.visualize_Q_contour(Q_values)
