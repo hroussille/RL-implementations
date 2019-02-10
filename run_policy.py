@@ -1,5 +1,6 @@
 import gym
 import numpy as np
+import argparse
 
 from implementations.algorithms import TD3
 from implementations.algorithms import DDPG
@@ -64,3 +65,27 @@ def run_policy(policy_name="Random",policy_directory=None,environment=None,
 
     env.close()
     return rb
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--policy_name",default="Random")
+    parser.add_argument("--policy_directory", default="policies")
+    parser.add_argument("--environment", default="MountainCarContinuous-v0")
+    parser.add_argument("--max_episodes", default=50, type=int)
+    parser.add_argument("--buffer_size", default=5000, type=int)
+    parser.add_argument('--quiet', dest='verbose', action='store_false')
+    parser.set_defaults(verbose=True)
+    parser.add_argument('--no-render', dest='render', action='store_false')
+    parser.set_defaults(render=True)
+
+    args = parser.parse_args()
+    
+    run_policy(policy_name=args.policy_name,
+            policy_directory=args.policy_directory,
+            environment=args.environment,
+            max_episodes=args.max_episodes,
+            buffer_size=args.buffer_size,
+            render=args.render,
+            verbose=args.verbose)
+

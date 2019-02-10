@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import gym
 import os
+import argparse
 
 from implementations.algorithms import DDPG
 from implementations.algorithms import TD3
@@ -154,3 +155,44 @@ def learn_policy(policy_name="DDPG",
     np.save("results/%s" % (file_name), evaluations)
     
     return rb
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--policy_name",default="Random")
+    parser.add_argument("--policy_directory", default="policies")
+    parser.add_argument("--seed", default=0, type=int)              #seed
+    parser.add_argument("--environment", default="MountainCarContinuous-v0")
+    parser.add_argument("--eval_freq", default=5e3, type=float)     #how often (time steps) we evaluate
+    parser.add_argument("--start_timesteps", default=1e3, type=int) #random steps at the beginning
+    parser.add_argument("--max_timesteps", default=1e4, type=int)
+    parser.add_argument("--buffer_size", default=5000, type=int)
+    parser.add_argument("--no-new-exp", dest='new_exp', action="store_false")
+    parser.set_defaults(new_exp=True)
+    parser.add_argument("--expl_noise", default=0.1, type=float)    #noise
+    parser.add_argument("--batch_size", default=100, type=int)      #learning batch
+    parser.add_argument("--discount", default=0.99, type=float)     #discount factor
+    parser.add_argument("--tau", default=0.005, type=float)         #target network update rate
+    parser.add_argument("--policy_noise", default=0.2, type=float)  #noise added to target policy during critic update
+    parser.add_argument("--noise_clip", default=0.5, type=float)    #range to clip target policy noise
+    parser.add_argument("--policy_freq", default=2, type=int)       #frequency of delayed policy updates
+    
+    args = parser.parse_args()
+
+    learn_policy(policy_name=args.policy_name,
+            policy_directory=args.policy_directory,
+            seed=args.seed,
+            environment=args.environment,
+            eval_freq=args.eval_freq,
+            start_timesteps=args.start_timesteps,
+            max_timesteps=args.max_timesteps,
+            buffer_size=args.buffer_size,
+            new_exp=args.new_exp,
+            expl_noise=args.expl_noise,
+            batch_size=args.batch_size,
+            discount=args.discount,
+            tau=args.tau,
+            policy_noise=args.policy_noise,
+            noise_clip=args.noise_clip,
+            policy_freq=args.policy_freq)
+
