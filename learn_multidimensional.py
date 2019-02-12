@@ -63,7 +63,7 @@ if __name__ == "__main__":
             noise_clip=args.noise_clip,
             policy_freq=args.policy_freq)
 
-    vis_2d.visualize_RB(replay_buffer)
+    vis_2d.visualize_RB(replay_buffer, args.acceleration)
 
     env = gym.make(environment)
 
