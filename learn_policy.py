@@ -70,7 +70,7 @@ def learn_policy(policy_name="DDPG",
     env.seed(seed)
     torch.manual_seed(seed)
     np.random.seed(seed)
-    
+
     state_dim = 1
     for dim_length in env.observation_space.shape:
         state_dim *= dim_length
@@ -151,6 +151,7 @@ def learn_policy(policy_name="DDPG",
 
         # Select action randomly or according to policy
         action = policy.select_action(np.array(obs))
+
         if expl_noise != 0:
             action = (action + np.random.normal(0, expl_noise, size=env.action_space.shape[0])).clip(env.action_space.low, env.action_space.high)
 

@@ -33,7 +33,7 @@ if __name__ == "__main__":
     parser.set_defaults(verbose=True)
     parser.add_argument('--velocity', dest='acceleration', action='store_false')
     parser.add_argument('--acceleration', dest='acceleration', action='store_true')
-    parser.set_defaults(acceleration=True)
+    parser.set_defaults(acceleration=False)
     parser.add_argument('--discrete', dest='continuous', action='store_false')
     parser.add_argument('--continuous', dest='continuous', action='store_true')
     parser.set_defaults(continuous=True)
@@ -44,6 +44,7 @@ if __name__ == "__main__":
 
     environment = gym_multi_dimensional.dynamic_register(n_dimensions=args.dimensions,
             env_description={},continuous=args.continuous,acceleration=args.acceleration)
+
 
     replay_buffer = learn_policy.learn_policy(policy_name=args.policy_name,
             policy_directory=args.policy_directory,
@@ -65,7 +66,7 @@ if __name__ == "__main__":
     vis_2d.visualize_RB(replay_buffer)
 
     env = gym.make(environment)
-    
+
     state_dim = 1
     for dim_length in env.observation_space.shape:
         state_dim *= dim_length
@@ -73,6 +74,7 @@ if __name__ == "__main__":
     for dim_length in env.action_space.shape:
         action_dim *= dim_length
     max_action = float(env.action_space.high[0])
+
 
     env.close()
 
