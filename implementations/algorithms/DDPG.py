@@ -146,8 +146,7 @@ class DDPG(object):
         for state in grid :
 
             torch_state = torch.FloatTensor(state.reshape((1,self.state_dim))).to(device)
-            action = self.select_action(state)
-            torch_action = torch.FloatTensor(action.reshape((1,self.action_dim))).to(device)
+            torch_action = self.actor(torch_state)
 
             current_Q = self.critic(torch_state,torch_action)
             cpu_Q = np.asscalar(current_Q.detach().cpu().numpy())

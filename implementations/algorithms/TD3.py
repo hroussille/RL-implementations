@@ -157,9 +157,8 @@ class TD3(object):
         for state in grid :
 
             torch_state = torch.FloatTensor(state.reshape((1,self.state_dim))).to(device)
-            action = self.select_action(state)
-            torch_action = torch.FloatTensor(action.reshape((1,self.action_dim))).to(device)
-            
+            torch_action = self.actor(torch_state)
+
             current_Q1,current_Q2 = self.critic(torch_state,torch_action)
             cpu_Q1 = np.asscalar(current_Q1.detach().cpu().numpy())
             cpu_Q2 = np.asscalar(current_Q2.detach().cpu().numpy())
@@ -185,8 +184,7 @@ class TD3(object):
         for state in grid :
 
             torch_state = torch.FloatTensor(state.reshape((1,self.state_dim))).to(device)
-            action = self.select_action(state)
-            torch_action = torch.FloatTensor(action.reshape((1,self.action_dim))).to(device)
+            torch_action = self.actor(torch_state)
 
             current_Q1,current_Q2 = self.critic(torch_state,torch_action)
             cpu_Q1 = np.asscalar(current_Q1.detach().cpu().numpy())
