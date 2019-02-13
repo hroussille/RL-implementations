@@ -111,8 +111,7 @@ class DDPG(object):
     def load(self, filename, directory):
         self.actor.load_state_dict(torch.load('%s/%s_actor.pth' % (directory, filename)))
         self.critic.load_state_dict(torch.load('%s/%s_critic.pth' % (directory, filename)))
-    
-    
+
     def get_2D_Q_values(self,env,size):
 
         Q_values = []
@@ -123,11 +122,8 @@ class DDPG(object):
         grid = np.c_[xx.ravel(),yy.ravel()]
 
         for state in grid :
-
             torch_state = torch.FloatTensor(state.reshape((1,self.state_dim))).to(device)
-            action = self.select_action(state)
-            torch_action = torch.FloatTensor(action.reshape((1,self.action_dim))).to(device)
-
+            torch_action = self.actor(torch_state)
             current_Q = self.critic(torch_state,torch_action)
             cpu_Q = np.asscalar(current_Q.detach().cpu().numpy())
             q_value = [cpu_Q]
@@ -135,7 +131,6 @@ class DDPG(object):
             Q_values.append(q_value)
 
         return np.array(Q_values)
-    
 
     def get_4D_Q_values(self,env,size):
 
