@@ -11,13 +11,9 @@ def run_policy(policy_name="Random",policy_directory=None,environment=None,
         max_episodes=50,buffer_size=5000,render=True,verbose=True):
 
     env = gym.make(environment)
-
-    state_dim = 1
-    for dim_length in env.observation_space.shape:
-        state_dim *= dim_length
-    action_dim = 1
-    for dim_length in env.action_space.shape:
-        action_dim *= dim_length
+    
+    state_dim = env.observation_space.shape[0]
+    action_dim = env.action_space.shape[0]
     max_action = float(env.action_space.high[0])
 
     if policy_name == "Random":
@@ -40,7 +36,7 @@ def run_policy(policy_name="Random",policy_directory=None,environment=None,
         while not done:
             if render:
                 env.render()
-            if policy_name == "Random":
+            if policy_name == "Random" :
                 action = env.action_space.sample()
             else:
                 action = policy.select_action(np.array(old_state))
@@ -88,4 +84,3 @@ if __name__ == "__main__":
             buffer_size=args.buffer_size,
             render=args.render,
             verbose=args.verbose)
-

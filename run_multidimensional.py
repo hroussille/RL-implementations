@@ -21,7 +21,7 @@ if __name__ == "__main__":
     parser.set_defaults(verbose=True)
     parser.add_argument('--velocity', dest='acceleration', action='store_false')
     parser.add_argument('--acceleration', dest='acceleration', action='store_true')
-    parser.set_defaults(acceleration=True)
+    parser.set_defaults(acceleration=False)
     parser.add_argument('--discrete', dest='continuous', action='store_false')
     parser.add_argument('--continuous', dest='continuous', action='store_true')
     parser.set_defaults(continuous=True)
@@ -66,6 +66,6 @@ if __name__ == "__main__":
             policy = DDPG.DDPG(state_dim,action_dim,max_action)
 
         policy.load(args.policy_name + "_" + environment,"policies")
-        Q_values = policy.Q_values(replay_buffer)
-        vis_2d.visualize_Q_arrow(Q_values)
+        Q_values = policy.get_2D_Q_values(env,10)
+        #vis_2d.visualize_Q_arrow(Q_values)
         vis_2d.visualize_Q_contour(Q_values)

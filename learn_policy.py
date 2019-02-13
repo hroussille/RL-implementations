@@ -71,12 +71,8 @@ def learn_policy(policy_name="DDPG",
     torch.manual_seed(seed)
     np.random.seed(seed)
 
-    state_dim = 1
-    for dim_length in env.observation_space.shape:
-        state_dim *= dim_length
-    action_dim = 1
-    for dim_length in env.action_space.shape:
-        action_dim *= dim_length
+    state_dim = env.observation_space.shape[0]
+    action_dim = env.action_space.shape[0]
     max_action = float(env.action_space.high[0])
 
     # Initialize policy
@@ -96,8 +92,6 @@ def learn_policy(policy_name="DDPG",
     episode_timesteps = 0
     episode_reward = 0
     done = True
-
-    Q_values = []
 
     while total_timesteps < start_timesteps:
 

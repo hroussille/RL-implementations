@@ -84,6 +84,6 @@ if __name__ == "__main__":
         policy = DDPG.DDPG(state_dim,action_dim,max_action)
 
     policy.load(args.policy_name + "_" + environment,"policies")
-    Q_values = policy.Q_values(replay_buffer)
-    vis_2d.visualize_Q_arrow(Q_values)
+    Q_values = policy.get_2D_Q_values(env,10)
+    #vis_2d.visualize_Q_arrow(Q_values)
     vis_2d.visualize_Q_contour(Q_values)
