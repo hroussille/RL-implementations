@@ -1,4 +1,5 @@
 import numpy as np
+import gym
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
@@ -14,9 +15,9 @@ class Actor(nn.Module):
     def __init__(self, state_dim, action_dim, max_action):
         super(Actor, self).__init__()
 
-        self.l1 = nn.Linear(state_dim, 400)
-        self.l2 = nn.Linear(400, 300)
-        self.l3 = nn.Linear(300, action_dim)
+        self.l1 = nn.Linear(state_dim, 40)
+        self.l2 = nn.Linear(40, 30)
+        self.l3 = nn.Linear(30, action_dim)
         self.max_action = max_action
 
 
@@ -31,9 +32,9 @@ class Critic(nn.Module):
     def __init__(self, state_dim, action_dim):
         super(Critic, self).__init__()
 
-        self.l1 = nn.Linear(state_dim, 400)
-        self.l2 = nn.Linear(400 + action_dim, 300)
-        self.l3 = nn.Linear(300, 1)
+        self.l1 = nn.Linear(state_dim, 40)
+        self.l2 = nn.Linear(40 + action_dim, 30)
+        self.l3 = nn.Linear(30, 1)
 
 
     def forward(self, x, u):
@@ -112,21 +113,26 @@ class DDPG(object):
         self.critic.load_state_dict(torch.load('%s/%s_critic.pth' % (directory, filename)))
     
     
-    def Q_values(self, replay_buffer):
+    def get_2D_Q_values(self,env,size):
 
         Q_values = []
-        for replay in replay_buffer:
+        xx,yy = np.meshgrid(
+                np.linspace(-env.observation_space.high[0],env.observation_space.high[0],size),
+                np.linspace(-env.observation_space.high[1],env.observation_space.high[1],size)
+                )
+        grid = np.c_[xx.ravel(),yy.ravel()]
+        print(grid)
 
-            state = replay[0].reshape((1, self.state_dim))
-            torch_state = torch.FloatTensor(state).to(device)
+        for state in grid :
 
-            action = np.array([self.select_action(state)])
-            torch_action = torch.FloatTensor(action).to(device)
+            torch_state = torch.FloatTensor(state.reshape((1,self.state_dim))).to(device)
+            action = self.select_action(state)
+            torch_action = torch.FloatTensor(action.reshape((1,self.action_dim))).to(device)
 
-            current_Q = self.critic(torch_state, torch_action)
+            current_Q = self.critic(torch_state,torch_action)
             cpu_Q = np.asscalar(current_Q.detach().cpu().numpy())
             q_value = [cpu_Q]
-            q_value.extend(state.reshape(self.state_dim))
+            q_value.extend(state)
             Q_values.append(q_value)
 
         return np.array(Q_values)
