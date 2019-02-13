@@ -13,9 +13,9 @@ class Actor(nn.Module):
     def __init__(self, state_dim, action_dim, max_action):
         super(Actor, self).__init__()
 
-        self.l1 = nn.Linear(state_dim, 400)
-        self.l2 = nn.Linear(400, 300)
-        self.l3 = nn.Linear(300, action_dim)
+        self.l1 = nn.Linear(state_dim, 100)
+        self.l2 = nn.Linear(100, 50)
+        self.l3 = nn.Linear(50, action_dim)
 
         self.max_action = max_action
 
@@ -159,10 +159,12 @@ class TD3(object):
             torch_state = torch.FloatTensor(state.reshape((1,self.state_dim))).to(device)
             action = self.select_action(state)
             torch_action = torch.FloatTensor(action.reshape((1,self.action_dim))).to(device)
+            
+            current_Q1,current_Q2 = self.critic(torch_state,torch_action)
+            cpu_Q1 = np.asscalar(current_Q1.detach().cpu().numpy())
+            cpu_Q2 = np.asscalar(current_Q2.detach().cpu().numpy())
+            q_value = [(cpu_Q1 + cpu_Q2)/2]
 
-            current_Q = self.critic(torch_state,torch_action)
-            cpu_Q = np.asscalar(current_Q.detach().cpu().numpy())
-            q_value = [cpu_Q]
             q_value.extend(state)
             Q_values.append(q_value)
 
@@ -186,9 +188,10 @@ class TD3(object):
             action = self.select_action(state)
             torch_action = torch.FloatTensor(action.reshape((1,self.action_dim))).to(device)
 
-            current_Q = self.critic(torch_state,torch_action)
-            cpu_Q = np.asscalar(current_Q.detach().cpu().numpy())
-            q_value = [cpu_Q]
+            current_Q1,current_Q2 = self.critic(torch_state,torch_action)
+            cpu_Q1 = np.asscalar(current_Q1.detach().cpu().numpy())
+            cpu_Q2 = np.asscalar(current_Q2.detach().cpu().numpy())
+            q_value = [(cpu_Q1 + cpu_Q2)/2]
             q_value.extend(state)
             Q_values.append(q_value)
 
