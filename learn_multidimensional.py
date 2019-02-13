@@ -63,8 +63,6 @@ if __name__ == "__main__":
             noise_clip=args.noise_clip,
             policy_freq=args.policy_freq)
 
-    vis_2d.visualize_RB(replay_buffer, args.acceleration)
-
     env = gym.make(environment)
 
     state_dim = 1
@@ -75,7 +73,6 @@ if __name__ == "__main__":
         action_dim *= dim_length
     max_action = float(env.action_space.high[0])
 
-
     env.close()
 
     if args.policy_name == "TD3":
@@ -84,6 +81,9 @@ if __name__ == "__main__":
         policy = DDPG.DDPG(state_dim,action_dim,max_action)
 
     policy.load(args.policy_name + "_" + environment,"policies")
-    Q_values = policy.get_2D_Q_values(env,10)
-    #vis_2d.visualize_Q_arrow(Q_values)
-    vis_2d.visualize_Q_contour(Q_values)
+    if args.acceleration:
+        Q_values = policy.get_4D_Q_values(env,5)
+        vis_2d.visualize_Q_arrow(Q_values)
+    else:
+        Q_values = policy.get_2D_Q_values(env,10)
+        vis_2d.visualize_Q_contour(Q_values)

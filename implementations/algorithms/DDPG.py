@@ -15,9 +15,9 @@ class Actor(nn.Module):
     def __init__(self, state_dim, action_dim, max_action):
         super(Actor, self).__init__()
 
-        self.l1 = nn.Linear(state_dim, 40)
-        self.l2 = nn.Linear(40, 30)
-        self.l3 = nn.Linear(30, action_dim)
+        self.l1 = nn.Linear(state_dim, 400)
+        self.l2 = nn.Linear(400, 300)
+        self.l3 = nn.Linear(300, action_dim)
         self.max_action = max_action
 
 
@@ -121,7 +121,32 @@ class DDPG(object):
                 np.linspace(-env.observation_space.high[1],env.observation_space.high[1],size)
                 )
         grid = np.c_[xx.ravel(),yy.ravel()]
-        print(grid)
+
+        for state in grid :
+
+            torch_state = torch.FloatTensor(state.reshape((1,self.state_dim))).to(device)
+            action = self.select_action(state)
+            torch_action = torch.FloatTensor(action.reshape((1,self.action_dim))).to(device)
+
+            current_Q = self.critic(torch_state,torch_action)
+            cpu_Q = np.asscalar(current_Q.detach().cpu().numpy())
+            q_value = [cpu_Q]
+            q_value.extend(state)
+            Q_values.append(q_value)
+
+        return np.array(Q_values)
+    
+
+    def get_4D_Q_values(self,env,size):
+
+        Q_values = []
+        xx,yy,ww,zz = np.meshgrid(
+                np.linspace(-env.observation_space.high[0],env.observation_space.high[0],size),
+                np.linspace(-env.observation_space.high[1],env.observation_space.high[1],size),
+                np.linspace(-env.observation_space.high[2],env.observation_space.high[2],size),
+                np.linspace(-env.observation_space.high[3],env.observation_space.high[3],size)
+                )
+        grid = np.c_[xx.ravel(),yy.ravel(),ww.ravel(),zz.ravel()]
 
         for state in grid :
 
