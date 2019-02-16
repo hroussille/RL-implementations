@@ -15,8 +15,8 @@ class Actor(nn.Module):
     def __init__(self, state_dim, action_dim, max_action):
         super(Actor, self).__init__()
 
-        self.l1 = nn.Linear(state_dim, 100)
-        self.l2 = nn.Linear(100, 50)
+        self.l1 = nn.Linear(state_dim, 40)
+        self.l2 = nn.Linear(40, 50)
         self.l3 = nn.Linear(50, action_dim)
         self.max_action = max_action
 
@@ -53,7 +53,7 @@ class DDPG(object):
         self.critic = Critic(state_dim, action_dim).to(device)
         self.critic_target = Critic(state_dim, action_dim).to(device)
         self.critic_target.load_state_dict(self.critic.state_dict())
-        self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), weight_decay=1e-2)
+        self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), lr=1e-4, weight_decay=1e-4)
         self.state_dim = state_dim
         self.action_dim = action_dim
 
@@ -78,6 +78,7 @@ class DDPG(object):
 
             # Get current Q estimate
             current_Q = self.critic(state, action)
+            # print(current_Q.detach().cpu().numpy())
 
             # Compute critic loss
             critic_loss = F.mse_loss(current_Q, target_Q)

@@ -8,13 +8,14 @@ from implementations.utils import replay_buffer
 
 import gym_multi_dimensional
 from gym_multi_dimensional.visualization import vis_2d
+import numpy as np
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--policy_name",default="DDPG")
     parser.add_argument("--policy_directory", default="policies")
-    parser.add_argument("--seed", default=0, type=int)              #seed
+    parser.add_argument("--seed", default=np.random.randint(10000), type=int)              #seed
     parser.add_argument("--dimensions", default=2, type=int)
     parser.add_argument("--eval_freq", default=5e3, type=float)     #how often (time steps) we evaluate
     parser.add_argument("--start_timesteps", default=1e3, type=int) #random steps at the beginning
