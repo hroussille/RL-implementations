@@ -24,7 +24,7 @@ if __name__ == "__main__":
     parser.add_argument("--no-new-exp", dest='new_exp', action="store_false")
     parser.set_defaults(new_exp=True)
     parser.add_argument("--expl_noise", default=0.1, type=float)    #noise
-    parser.add_argument("--batch_size", default=100, type=int)      #learning batch
+    parser.add_argument("--batch_size", default=64, type=int)      #learning batch
     parser.add_argument("--discount", default=0.99, type=float)     #discount factor
     parser.add_argument("--tau", default=0.005, type=float)         #target network update rate
     parser.add_argument("--policy_noise", default=0.2, type=float)  #noise added to target policy during critic update
@@ -47,7 +47,7 @@ if __name__ == "__main__":
             env_description={},continuous=args.continuous,acceleration=args.acceleration)
 
 
-    replay_buffer = learn_policy.learn_policy(policy_name=args.policy_name,
+    replay_buffer, q_values = learn_policy.learn_policy(policy_name=args.policy_name,
             policy_directory=args.policy_directory,
             seed=args.seed,
             environment=environment,
@@ -82,6 +82,8 @@ if __name__ == "__main__":
         policy = DDPG.DDPG(state_dim,action_dim,max_action)
 
     policy.load(args.policy_name + "_" + environment,"policies")
+
+    vis_2d.visualize_Q_contour_time(q_values, args.policy_name)
 
     if args.acceleration:
         Q_values = policy.get_4D_Q_values(env,5)

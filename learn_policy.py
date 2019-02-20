@@ -51,13 +51,14 @@ def learn_policy(policy_name="DDPG",
             buffer_size=5000,
             new_exp=True,
             expl_noise=0.1,
-            batch_size=100,
+            batch_size=64,
             discount=0.99,
             tau=0.005,
             policy_noise=0.2,
             noise_clip=0.5,
             policy_freq=2):
 
+    q_values = []
     env = gym.make(environment)
 
     file_name = "%s_%s" % (policy_name, environment)
@@ -135,6 +136,7 @@ def learn_policy(policy_name="DDPG",
                     timesteps_since_eval %= eval_freq
                     evaluations.append(evaluate_policy(policy,env))
                     np.save("./results/%s" % (file_name), evaluations)
+                    q_values.append(policy.get_2D_Q_values(env, 25))
 
                 # Reset environment
                 obs = env.reset()
@@ -175,7 +177,7 @@ def learn_policy(policy_name="DDPG",
 
     visualize_training(evaluations, eval_freq)
 
-    return rb
+    return rb, q_values
 
 if __name__ == "__main__":
 
@@ -191,7 +193,7 @@ if __name__ == "__main__":
     parser.add_argument("--no-new-exp", dest='new_exp', action="store_false")
     parser.set_defaults(new_exp=True)
     parser.add_argument("--expl_noise", default=0.1, type=float)    #noise
-    parser.add_argument("--batch_size", default=100, type=int)      #learning batch
+    parser.add_argument("--batch_size", default=64, type=int)      #learning batch
     parser.add_argument("--discount", default=0.99, type=float)     #discount factor
     parser.add_argument("--tau", default=0.005, type=float)         #target network update rate
     parser.add_argument("--policy_noise", default=0.2, type=float)  #noise added to target policy during critic update

@@ -78,7 +78,6 @@ class DDPG(object):
 
             # Get current Q estimate
             current_Q = self.critic(state, action)
-            # print(current_Q.detach().cpu().numpy())
 
             # Compute critic loss
             critic_loss = F.mse_loss(current_Q, target_Q)
@@ -112,6 +111,7 @@ class DDPG(object):
     def load(self, filename, directory):
         self.actor.load_state_dict(torch.load('%s/%s_actor.pth' % (directory, filename)))
         self.critic.load_state_dict(torch.load('%s/%s_critic.pth' % (directory, filename)))
+        self.critic = self.critic.eval()
 
     def get_2D_Q_values(self,env,size):
 
