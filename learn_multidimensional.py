@@ -1,4 +1,3 @@
-import learn_policy
 import argparse
 import gym
 
@@ -7,7 +6,6 @@ from implementations.algorithms import DDPG
 from implementations.utils import replay_buffer
 
 import gym_multi_dimensional
-from gym_multi_dimensional.visualization import vis_2d
 import numpy as np
 
 if __name__ == "__main__":
@@ -39,9 +37,19 @@ if __name__ == "__main__":
     parser.add_argument('--continuous', dest='continuous', action='store_true')
     parser.set_defaults(continuous=True)
     parser.add_argument('--no-render', dest='render', action='store_false')
+    parser.add_argument('--headless', dest='headless', action='store_true')
+    parser.set_defaults(headless=False)
     parser.set_defaults(render=True)
 
     args = parser.parse_args()
+
+    if args.headless == True:
+        import matplotlib
+        matplotlib.use('Agg')
+
+    """ Delayed import of learn_policy and visualisation module to account for headless benchmarking """
+    import learn_policy
+    from gym_multi_dimensional.visualization import vis_2d
 
     environment = gym_multi_dimensional.dynamic_register(n_dimensions=args.dimensions,
             env_description={},continuous=args.continuous,acceleration=args.acceleration)
