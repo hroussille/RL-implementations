@@ -113,37 +113,22 @@ class DDPG(object):
         self.critic.load_state_dict(torch.load('%s/%s_critic.pth' % (directory, filename)))
         self.critic = self.critic.eval()
 
-    def get_2D_Q_values(self,env,size):
+
+    def get_Q_values(self,env,size):
+
+        dim_linspaces = []
+        for dim in range(env.observation_space.high.shape[0]):
+            dim_linspaces.append(np.linspace(
+                    -env.observation_space.high[dim],
+                    env.observation_space.high[dim],
+                    size))
+        meshed_dim = np.meshgrid(*dim_linspaces)
+        reshaped_meshed_dim = []
+        for dim in meshed_dim:
+            reshaped_meshed_dim.append(dim.ravel().reshape(-1,1))
+        grid = np.hstack(reshaped_meshed_dim)
 
         Q_values = []
-        xx,yy = np.meshgrid(
-                np.linspace(-env.observation_space.high[0],env.observation_space.high[0],size),
-                np.linspace(-env.observation_space.high[1],env.observation_space.high[1],size)
-                )
-        grid = np.c_[xx.ravel(),yy.ravel()]
-
-        for state in grid :
-            torch_state = torch.FloatTensor(state.reshape((1,self.state_dim))).to(device)
-            torch_action = self.actor(torch_state)
-            current_Q = self.critic(torch_state,torch_action)
-            cpu_Q = np.asscalar(current_Q.detach().cpu().numpy())
-            q_value = [cpu_Q]
-            q_value.extend(state)
-            Q_values.append(q_value)
-
-        return np.array(Q_values)
-
-    def get_4D_Q_values(self,env,size):
-
-        Q_values = []
-        xx,yy,ww,zz = np.meshgrid(
-                np.linspace(-env.observation_space.high[0],env.observation_space.high[0],size),
-                np.linspace(-env.observation_space.high[1],env.observation_space.high[1],size),
-                np.linspace(-env.observation_space.high[2],env.observation_space.high[2],size),
-                np.linspace(-env.observation_space.high[3],env.observation_space.high[3],size)
-                )
-        grid = np.c_[xx.ravel(),yy.ravel(),ww.ravel(),zz.ravel()]
-
         for state in grid :
 
             torch_state = torch.FloatTensor(state.reshape((1,self.state_dim))).to(device)

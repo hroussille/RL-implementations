@@ -83,11 +83,10 @@ if __name__ == "__main__":
 
     policy.load(args.policy_name + "_" + environment,"policies")
 
-    vis_2d.visualize_Q_contour_time(q_values, args.policy_name)
-
+    Q_values = policy.get_Q_values(env,10)
     if args.acceleration:
-        Q_values = policy.get_4D_Q_values(env,5)
         vis_2d.visualize_Q_arrow(Q_values)
     else:
-        Q_values = policy.get_2D_Q_values(env,50)
         vis_2d.visualize_Q_contour(Q_values)
+        vis_2d.visualize_Q_contour_time(q_values, args.policy_name)
+

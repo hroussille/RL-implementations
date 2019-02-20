@@ -136,7 +136,7 @@ def learn_policy(policy_name="DDPG",
                     timesteps_since_eval %= eval_freq
                     evaluations.append(evaluate_policy(policy,env))
                     np.save("./results/%s" % (file_name), evaluations)
-                    q_values.append(policy.get_2D_Q_values(env, 25))
+                    q_values.append(policy.get_Q_values(env, 10))
 
                 # Reset environment
                 obs = env.reset()
