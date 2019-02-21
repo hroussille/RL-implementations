@@ -9,10 +9,15 @@ from implementations.algorithms import DDPG
 from implementations.algorithms import TD3
 from implementations.utils import replay_buffer
 
-def visualize_training(evaluations, freq=1):
+def visualize_training(evaluations, freq=1, save=False, path=''):
     x = np.arange(0, freq * len(evaluations), freq)
     plt.plot(x, evaluations)
+
+    if save:
+        plt.savefig(path + "/scores.png")
+
     plt.show()
+
 
 # Runs policy for X episodes and returns average reward
 def evaluate_policy(policy, env, eval_episodes=50):
@@ -42,7 +47,10 @@ def evaluate_policy(policy, env, eval_episodes=50):
 
 
 def learn_policy(policy_name="DDPG",
-            policy_directory="policies",
+            policy_directory='policies',
+            evaluations_directory='evaluations',
+            visualizations_directory='visualizations',
+            save=False,
             seed=0,
             environment=None,
             eval_freq=5e3,
@@ -135,7 +143,7 @@ def learn_policy(policy_name="DDPG",
                 if timesteps_since_eval >= eval_freq:
                     timesteps_since_eval %= eval_freq
                     evaluations.append(evaluate_policy(policy,env))
-                    np.save("./results/%s" % (file_name), evaluations)
+                    np.save(evaluations_directory + "/%s" % (file_name), evaluations)
                     q_values.append(policy.get_Q_values(env, 10))
 
                 # Reset environment
@@ -170,12 +178,15 @@ def learn_policy(policy_name="DDPG",
 
     if not os.path.exists(policy_directory):
         os.makedirs(policy_directory)
-    policy.save("%s" % (file_name), directory=policy_directory)
-    if not os.path.exists("results"):
-        os.makedirs("results")
-    np.save("results/%s" % (file_name), evaluations)
 
-    visualize_training(evaluations, eval_freq)
+    policy.save("%s" % (file_name), directory=policy_directory)
+
+    if not os.path.exists(evaluations_directory):
+        os.makedirs(evaluations_directory)
+
+    np.save(evaluations_directory + "/%s" % (file_name), evaluations)
+
+    visualize_training(evaluations, eval_freq, save, visualizations_directory)
 
     return rb, q_values
 
