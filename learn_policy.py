@@ -46,7 +46,7 @@ def evaluate_policy(policy, env, eval_episodes=50):
     return avg_reward
 
 
-def learn_policy(policy_name="DDPG",
+def learn(policy_name="DDPG",
             policy_directory='policies',
             evaluations_directory='evaluations',
             visualizations_directory='visualizations',
@@ -54,8 +54,8 @@ def learn_policy(policy_name="DDPG",
             seed=0,
             environment=None,
             eval_freq=5e3,
-            start_timesteps=1e3,
-            max_timesteps=1e4,
+            exploration_timesteps=1e3,
+            learn_timesteps=1e4,
             buffer_size=5000,
             new_exp=True,
             expl_noise=0.1,
@@ -102,7 +102,7 @@ def learn_policy(policy_name="DDPG",
     episode_reward = 0
     done = True
 
-    while total_timesteps < start_timesteps:
+    while total_timesteps < exploration_timesteps:
 
         if done:
             # Reset environment
@@ -128,7 +128,14 @@ def learn_policy(policy_name="DDPG",
 
     ## apply filtre to replay_buffer
 
-    while total_timesteps < max_timesteps:
+    total_timesteps = 0
+    timesteps_since_eval = 0
+    episode_num = 0
+    episode_timesteps = 0
+    episode_reward = 0
+    done = True
+
+    while total_timesteps < learn_timesteps:
 
         if done:
             if total_timesteps != 0:
@@ -144,7 +151,8 @@ def learn_policy(policy_name="DDPG",
                     timesteps_since_eval %= eval_freq
                     evaluations.append(evaluate_policy(policy,env))
                     np.save(evaluations_directory + "/%s" % (file_name), evaluations)
-                    q_values.append(policy.get_Q_values(env, 10))
+                    if state_dim <= 2:
+                        q_values.append(policy.get_Q_values(env, 10))
 
                 # Reset environment
                 obs = env.reset()
@@ -198,8 +206,8 @@ if __name__ == "__main__":
     parser.add_argument("--seed", default=0, type=int)              #seed
     parser.add_argument("--environment", default="MountainCarContinuous-v0")
     parser.add_argument("--eval_freq", default=5e3, type=float)     #how often (time steps) we evaluate
-    parser.add_argument("--start_timesteps", default=1e3, type=int) #random steps at the beginning
-    parser.add_argument("--max_timesteps", default=1e4, type=int)
+    parser.add_argument("--exploration_timesteps", default=1e3, type=int) #random steps at the beginning
+    parser.add_argument("--learn_timesteps", default=1e4, type=int)
     parser.add_argument("--buffer_size", default=5000, type=int)
     parser.add_argument("--no-new-exp", dest='new_exp', action="store_false")
     parser.set_defaults(new_exp=True)
@@ -213,13 +221,13 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
 
-    learn_policy(policy_name=args.policy_name,
+    learn(policy_name=args.policy_name,
             policy_directory=args.policy_directory,
             seed=args.seed,
             environment=args.environment,
             eval_freq=args.eval_freq,
-            start_timesteps=args.start_timesteps,
-            max_timesteps=args.max_timesteps,
+            exploration_timesteps=args.exploration_timesteps,
+            learn_timesteps=args.learn_timesteps,
             buffer_size=args.buffer_size,
             new_exp=args.new_exp,
             expl_noise=args.expl_noise,
