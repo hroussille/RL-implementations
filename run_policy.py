@@ -7,7 +7,7 @@ from implementations.algorithms import DDPG
 from implementations.utils import replay_buffer
 
 
-def run_policy(policy_name="Random",policy_directory=None,environment=None,
+def run_policy(policy_name="Random",policy_directory="policies",environment=None,
         max_episodes=50,buffer_size=5000,render=True,verbose=True):
 
     env = gym.make(environment)
@@ -23,7 +23,7 @@ def run_policy(policy_name="Random",policy_directory=None,environment=None,
             policy = TD3.TD3(state_dim,action_dim,max_action)
         elif policy_name == "DDPG":
             policy = DDPG.DDPG(state_dim,action_dim,max_action)
-        policy.load(policy_name + "_" + environment,"policies")
+        policy.load(policy_name + "_" + environment,policy_directory)
 
     rb = replay_buffer.ReplayBuffer(buffer_size)
     old_state = None
