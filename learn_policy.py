@@ -55,7 +55,7 @@ def learn(policy_name="DDPG",
             environment=None,
             eval_freq=5e3,
             exploration_timesteps=1e3,
-            learn_timesteps=1e4,
+            learning_timesteps=1e4,
             buffer_size=5000,
             new_exp=True,
             expl_noise=0.1,
@@ -135,7 +135,7 @@ def learn(policy_name="DDPG",
     episode_reward = 0
     done = True
 
-    while total_timesteps < learn_timesteps:
+    while total_timesteps < learning_timesteps:
 
         if done:
             if total_timesteps != 0:
@@ -207,7 +207,7 @@ if __name__ == "__main__":
     parser.add_argument("--environment", default="MountainCarContinuous-v0")
     parser.add_argument("--eval_freq", default=5e3, type=float)     #how often (time steps) we evaluate
     parser.add_argument("--exploration_timesteps", default=1e3, type=int) #random steps at the beginning
-    parser.add_argument("--learn_timesteps", default=1e4, type=int)
+    parser.add_argument("--learning_timesteps", default=1e4, type=int)
     parser.add_argument("--buffer_size", default=5000, type=int)
     parser.add_argument("--no-new-exp", dest='new_exp', action="store_false")
     parser.set_defaults(new_exp=True)
@@ -227,7 +227,7 @@ if __name__ == "__main__":
             environment=args.environment,
             eval_freq=args.eval_freq,
             exploration_timesteps=args.exploration_timesteps,
-            learn_timesteps=args.learn_timesteps,
+            learning_timesteps=args.learning_timesteps,
             buffer_size=args.buffer_size,
             new_exp=args.new_exp,
             expl_noise=args.expl_noise,
