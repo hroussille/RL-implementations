@@ -64,7 +64,8 @@ def learn(policy_name="DDPG",
             tau=0.005,
             policy_noise=0.2,
             noise_clip=0.5,
-            policy_freq=2):
+            policy_freq=2,
+            filter=None):
 
     q_values = []
     env = gym.make(environment)
@@ -112,21 +113,30 @@ def learn(policy_name="DDPG",
             episode_timesteps = 0
             episode_num += 1
 
+            if filter is not None:
+                while(filter.isIn(obs)):
+                    obs = env.reset()
+
         action = env.action_space.sample()
 
         # Perform action
         new_obs, reward, done, _ = env.step(action)
-        episode_reward += reward
 
-        rb.push(obs, action, reward, done, new_obs)
-
-        obs = new_obs
-
-        episode_timesteps += 1
-        total_timesteps += 1
-        timesteps_since_eval += 1
-
-    ## apply filtre to replay_buffer
+        if filter is not None:
+            if filter.isOut(new_obs):
+                rb.push(obs, action, reward, done, new_obs)
+                episode_timesteps += 1
+                total_timesteps += 1
+                timesteps_since_eval += 1
+                episode_reward += reward
+                obs = new_obs
+        else:
+            rb.push(obs, action, reward, done, new_obs)
+            episode_reward += reward
+            episode_timesteps += 1
+            total_timesteps += 1
+            timesteps_since_eval += 1
+            obs = new_obs
 
     total_timesteps = 0
     timesteps_since_eval = 0

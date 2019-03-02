@@ -7,7 +7,7 @@ class Filter():
         self.dimension = len(center)
 
     def isIn(self, position):
-        pass
+        return False
 
     def isOut(self, position):
         return not self.isIn(position)
