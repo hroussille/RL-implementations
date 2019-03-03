@@ -45,15 +45,15 @@ class Critic(nn.Module):
 
 
 class DDPG(object):
-    def __init__(self, state_dim, action_dim, max_action):
+    def __init__(self, state_dim, action_dim, max_action,learning_rate=1e-4):
         self.actor = Actor(state_dim, action_dim, max_action).to(device)
         self.actor_target = Actor(state_dim, action_dim, max_action).to(device)
         self.actor_target.load_state_dict(self.actor.state_dict())
-        self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr=1e-4)
+        self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr=learning_rate)
         self.critic = Critic(state_dim, action_dim).to(device)
         self.critic_target = Critic(state_dim, action_dim).to(device)
         self.critic_target.load_state_dict(self.critic.state_dict())
-        self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), lr=1e-4, weight_decay=1e-4)
+        self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), lr=learning_rate, weight_decay=1e-4)
         self.state_dim = state_dim
         self.action_dim = action_dim
 
