@@ -109,8 +109,8 @@ class DDPG(object):
 
 
     def load(self, filename, directory):
-        self.actor.load_state_dict(torch.load('%s/%s_actor.pth' % (directory, filename)))
-        self.critic.load_state_dict(torch.load('%s/%s_critic.pth' % (directory, filename)))
+        self.actor.load_state_dict(torch.load('%s/%s_actor.pth' % (directory, filename), map_location=device))
+        self.critic.load_state_dict(torch.load('%s/%s_critic.pth' % (directory, filename), map_location=device))
 
 
     def get_Q_values(self,env,size):
