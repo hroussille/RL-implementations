@@ -11,7 +11,9 @@ from implementations.utils import replay_buffer
 
 def visualize_training(evaluations, freq=1, save=False, path=''):
     x = np.arange(0, freq * len(evaluations), freq)
-    plt.plot(x, evaluations)
+
+    plt.errorbar(x, evaluations[:, 0], evaluations[:, 1], fmt="--o")
+    plt.title("Average reward per step")
 
     if save:
         plt.savefig(path + "/scores.png")
@@ -20,11 +22,17 @@ def visualize_training(evaluations, freq=1, save=False, path=''):
 
 
 # Runs policy for X episodes and returns average reward
-def evaluate_policy(policy, env, eval_episodes=50):
+def evaluate_policy(policy, env, eval_episodes=200):
     avg_reward = 0.
-    steps = 0
+    total_steps = 0
+
+    records = np.array([])
+    steps = np.array([])
 
     for i in range(eval_episodes):
+
+        episode_reward = 0
+        episode_steps = 0
 
         state = env.reset()
         done = False
@@ -32,18 +40,25 @@ def evaluate_policy(policy, env, eval_episodes=50):
         while not done:
             action = policy.select_action(np.array(state))
             state, reward, done, _ = env.step(action)
-            avg_reward += reward
-            steps = steps + 1
+            episode_reward += reward
+            episode_steps += 1
 
-            if steps > env._max_episode_steps:
+            if episode_steps > env._max_episode_steps:
                 done = True
 
-    avg_reward /= steps
+        total_steps += episode_steps
+
+        records = np.append(records, episode_reward)
+        steps = np.append(steps, episode_steps)
+
+    avg_reward = np.sum(records) / total_steps
+    error = np.std(records / steps)
 
     print ("---------------------------------------")
     print ("Evaluation over %d episodes: %f" % (eval_episodes, avg_reward))
     print ("---------------------------------------")
-    return avg_reward
+
+    return np.array([avg_reward, error])
 
 
 def learn(policy_name="DDPG",
@@ -194,6 +209,7 @@ def learn(policy_name="DDPG",
 
     # Final evaluation
     evaluations.append(evaluate_policy(policy,env))
+    evaluations = np.array(evaluations)
 
     if not os.path.exists(policy_directory):
         os.makedirs(policy_directory)
