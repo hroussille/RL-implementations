@@ -113,7 +113,7 @@ class DDPG(object):
         self.critic.load_state_dict(torch.load('%s/%s_critic.pth' % (directory, filename), map_location=device))
 
 
-    def get_Q_values(self,env,size):
+    def get_Q_values(self,env,size,pi=False):
 
         dim_linspaces = []
         for dim in range(env.observation_space.high.shape[0]):
@@ -137,6 +137,9 @@ class DDPG(object):
             cpu_Q = np.asscalar(current_Q.detach().cpu().numpy())
             q_value = [cpu_Q]
             q_value.extend(state)
+            action = torch_action.detach().cpu().numpy()
+            if pi:
+                q_value.extend(action.flatten().tolist())
             Q_values.append(q_value)
 
         return np.array(Q_values)

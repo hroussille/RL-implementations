@@ -84,6 +84,7 @@ def learn(policy_name="DDPG",
             filter=None):
 
     q_values = []
+    q_pi_values = []
     env = gym.make(environment)
 
     file_name = "%s_%s" % (policy_name, environment)
@@ -178,7 +179,8 @@ def learn(policy_name="DDPG",
                     evaluations.append(evaluate_policy(policy,env))
                     np.save(evaluations_directory + "/%s" % (file_name), evaluations)
                     if state_dim <= 2:
-                        q_values.append(policy.get_Q_values(env, 10))
+                        q_values.append(policy.get_Q_values(env, 20))
+                        q_pi_values.append(policy.get_Q_values(env, 10,pi=True))
 
                 # Reset environment
                 obs = env.reset()
@@ -223,7 +225,7 @@ def learn(policy_name="DDPG",
 
     visualize_training(evaluations, eval_freq, save, visualizations_directory)
 
-    return rb, q_values
+    return rb, q_values, q_pi_values
 
 if __name__ == "__main__":
 
