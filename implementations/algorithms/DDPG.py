@@ -113,7 +113,7 @@ class DDPG(object):
         self.critic.load_state_dict(torch.load('%s/%s_critic.pth' % (directory, filename), map_location=device))
 
 
-    def get_Q_values(self,env,size,pi=False):
+    def get_Q_values(self,env,size):
 
         dim_linspaces = []
         for dim in range(env.observation_space.high.shape[0]):
@@ -138,8 +138,33 @@ class DDPG(object):
             q_value = [cpu_Q]
             q_value.extend(state)
             action = torch_action.detach().cpu().numpy()
-            if pi:
-                q_value.extend(action.flatten().tolist())
             Q_values.append(q_value)
 
         return np.array(Q_values)
+    
+
+    def get_Pi_values(self,env,size):
+
+        dim_linspaces = []
+        for dim in range(env.observation_space.high.shape[0]):
+            dim_linspaces.append(np.linspace(
+                    -env.observation_space.high[dim],
+                    env.observation_space.high[dim],
+                    size))
+        meshed_dim = np.meshgrid(*dim_linspaces)
+        reshaped_meshed_dim = []
+        for dim in meshed_dim:
+            reshaped_meshed_dim.append(dim.ravel().reshape(-1,1))
+        grid = np.hstack(reshaped_meshed_dim)
+
+        Pi_values = []
+        for state in grid :
+
+            torch_state = torch.FloatTensor(state.reshape((1,self.state_dim))).to(device)
+            torch_action = self.actor(torch_state)
+            pi_value = state.flatten().tolist()
+            action = torch_action.detach().cpu().numpy()
+            pi_value.extend(action.flatten().tolist())
+            Pi_values.append(pi_value)
+
+        return np.array(Pi_values)

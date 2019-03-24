@@ -143,7 +143,7 @@ class TD3(object):
     def load(self, filename, directory):
         self.actor.load_state_dict(torch.load('%s/%s_actor.pth' % (directory, filename), map_location=device))
         self.critic.load_state_dict(torch.load('%s/%s_critic.pth' % (directory, filename), map_location=device))
-
+        
     
     def get_Q_values(self,env,size):
 
@@ -168,8 +168,36 @@ class TD3(object):
             current_Q1,current_Q2 = self.critic(torch_state,torch_action)
             cpu_Q1 = np.asscalar(current_Q1.detach().cpu().numpy())
             cpu_Q2 = np.asscalar(current_Q2.detach().cpu().numpy())
-            q_value = [(cpu_Q1 + cpu_Q2)/2]
+            q_value = [np.min(cpu_Q1,cpu_Q2)]
             q_value.extend(state)
+            action = torch_action.detach().cpu().numpy()
             Q_values.append(q_value)
 
         return np.array(Q_values)
+    
+
+    def get_Pi_values(self,env,size):
+
+        dim_linspaces = []
+        for dim in range(env.observation_space.high.shape[0]):
+            dim_linspaces.append(np.linspace(
+                    -env.observation_space.high[dim],
+                    env.observation_space.high[dim],
+                    size))
+        meshed_dim = np.meshgrid(*dim_linspaces)
+        reshaped_meshed_dim = []
+        for dim in meshed_dim:
+            reshaped_meshed_dim.append(dim.ravel().reshape(-1,1))
+        grid = np.hstack(reshaped_meshed_dim)
+
+        Pi_values = []
+        for state in grid :
+
+            torch_state = torch.FloatTensor(state.reshape((1,self.state_dim))).to(device)
+            torch_action = self.actor(torch_state)
+            pi_value = state.flatten().tolist()
+            action = torch_action.detach().cpu().numpy()
+            pi_value.extend(action.flatten().tolist())
+            Pi_values.append(pi_value)
+
+        return np.array(Pi_values)
