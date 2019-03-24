@@ -22,7 +22,7 @@ def visualize_training(evaluations, freq=1, save=False, path=''):
 
 
 # Runs policy for X episodes and returns average reward
-def evaluate_policy(policy, env, eval_episodes=200):
+def evaluate_policy(policy, env, eval_episodes=100):
     avg_reward = 0.
     total_steps = 0
 
