@@ -63,7 +63,7 @@ def evaluate_policy(policy, env, eval_episodes=200):
 
 def learn(policy_name="DDPG",
             policy_directory='policies',
-            evaluations_directory='evaluations',
+            logs_directory='logs',
             visualizations_directory='visualizations',
             save=False,
             seed=0,
@@ -177,7 +177,7 @@ def learn(policy_name="DDPG",
                 if timesteps_since_eval >= eval_freq:
                     timesteps_since_eval %= eval_freq
                     evaluations.append(evaluate_policy(policy,env))
-                    np.save(evaluations_directory + "/%s" % (file_name), evaluations)
+                    #np.save(evaluations_directory + "/%s" % (file_name), evaluations)
                     if state_dim <= 2:
                         q_values.append(policy.get_Q_values(env, 20))
                         pi_values.append(policy.get_Pi_values(env, 10))
@@ -218,10 +218,13 @@ def learn(policy_name="DDPG",
 
     policy.save("%s" % (file_name), directory=policy_directory)
 
-    if not os.path.exists(evaluations_directory):
-        os.makedirs(evaluations_directory)
+    if not os.path.exists(logs_directory):
+        os.makedirs(logs_directory)
 
-    np.save(evaluations_directory + "/%s" % (file_name), evaluations)
+    np.save(logs_directory + "/evaluations", evaluations)
+    np.save(logs_directory + "/q_values", q_values)
+    np.save(logs_directory + "/pi_values", pi_values)
+    np.save(logs_directory + "/replay_buffer", rb)
 
     visualize_training(evaluations, eval_freq, save, visualizations_directory)
 
