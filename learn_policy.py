@@ -113,6 +113,7 @@ def learn(policy_name="DDPG",
     # Evaluate untrained policy
     evaluations = [evaluate_policy(policy,env)]
 
+
     total_timesteps = 0
     timesteps_since_eval = 0
     episode_num = 0
@@ -212,6 +213,10 @@ def learn(policy_name="DDPG",
     # Final evaluation
     evaluations.append(evaluate_policy(policy,env))
     evaluations = np.array(evaluations)
+    if state_dim <= 2:
+        q_values.append(policy.get_Q_values(env, 20))
+        pi_values.append(policy.get_Pi_values(env, 10))
+
 
     if not os.path.exists(policy_directory):
         os.makedirs(policy_directory)
