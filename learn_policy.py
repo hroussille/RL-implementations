@@ -173,16 +173,7 @@ def learn(policy_name="DDPG",
                     policy.train(rb, episode_timesteps, batch_size, discount, tau, policy_noise, noise_clip, policy_freq)
                 else:
                     policy.train(rb, episode_timesteps, batch_size, discount, tau)
-
-                # Evaluate episode
-                if timesteps_since_eval >= eval_freq:
-                    timesteps_since_eval %= eval_freq
-                    evaluations.append(evaluate_policy(policy,env))
-                    #np.save(evaluations_directory + "/%s" % (file_name), evaluations)
-                    if state_dim <= 2:
-                        q_values.append(policy.get_Q_values(env, 20))
-                        pi_values.append(policy.get_Pi_values(env, 10))
-
+                
                 # Reset environment
                 obs = env.reset()
                 done = False
@@ -190,6 +181,15 @@ def learn(policy_name="DDPG",
                 episode_timesteps = 0
                 episode_num += 1
 
+        # Evaluate episode
+        if timesteps_since_eval >= eval_freq:
+            timesteps_since_eval %= eval_freq
+            evaluations.append(evaluate_policy(policy,env))
+            #np.save(evaluations_directory + "/%s" % (file_name), evaluations)
+            if state_dim <= 2:
+                q_values.append(policy.get_Q_values(env, 20))
+                pi_values.append(policy.get_Pi_values(env, 10))
+                
         # Select action randomly or according to policy
         action = policy.select_action(np.array(obs))
 
