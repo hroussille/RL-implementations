@@ -70,6 +70,7 @@ def learn(policy_name="DDPG",
             environment=None,
             eval_freq=5e3,
             exploration_timesteps=1e3,
+            exploration_mode="sequential",
             learning_timesteps=1e4,
             buffer_size=5000,
             new_exp=True,
@@ -125,7 +126,12 @@ def learn(policy_name="DDPG",
 
         if done:
             # Reset environment
-            obs = env.reset()
+            if exploration_mode == "sequential":
+                obs = env.reset()
+
+            elif exploration_mode == "uniform":
+                obs = env.observation_space.sample()
+
             done = False
             episode_reward = 0
             episode_timesteps = 0
@@ -133,15 +139,22 @@ def learn(policy_name="DDPG",
 
             if filter is not None:
                 while(filter.isIn(obs)):
-                    obs = env.reset()
+                    if exploration_mode == "sequential":
+                        obs = env.reset()
+                    elif exploration_mode == "uniform":
+                        obs = env.observation_space.sample()
 
         action = env.action_space.sample()
 
         # Perform action
-        new_obs, reward, done, _ = env.step(action)
+        if exploration_mode == "sequential":
+            new_obs, reward, done, _ = env.step(action)
+
+        elif exploration_mode == "uniform":
+            new_obs, reward, done, _ = env.step(action, forced_state=obs)
 
         if filter is not None:
-            if filter.isOut(new_obs) and filter.isOunt(obs):
+            if filter.isOut(new_obs) and filter.isOut(obs):
                 rb.push(obs, action, reward, done, new_obs)
                 episode_timesteps += 1
                 total_timesteps += 1
@@ -244,6 +257,7 @@ if __name__ == "__main__":
     parser.add_argument("--environment", default="MountainCarContinuous-v0")
     parser.add_argument("--eval_freq", default=5e3, type=float)     #how often (time steps) we evaluate
     parser.add_argument("--exploration_timesteps", default=1e3, type=int) #random steps at the beginning
+    parser.add_argument("--exploration_mode", default="sequential", type=str)
     parser.add_argument("--learning_timesteps", default=1e4, type=int)
     parser.add_argument("--buffer_size", default=5000, type=int)
     parser.add_argument("--no-new-exp", dest='new_exp', action="store_false")
@@ -265,6 +279,7 @@ if __name__ == "__main__":
             environment=args.environment,
             eval_freq=args.eval_freq,
             exploration_timesteps=args.exploration_timesteps,
+            exploration_mode=args.exploration_mode,
             learning_timesteps=args.learning_timesteps,
             buffer_size=args.buffer_size,
             new_exp=args.new_exp,
