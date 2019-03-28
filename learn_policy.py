@@ -229,6 +229,7 @@ def learn(policy_name="DDPG",
 
     # Final evaluation
     evaluations.append(evaluate_policy(policy,eval_env))
+    evaluations = np.array(evaluations)
     if state_dim <= 2:
         q_values.append(policy.get_Q_values(env, 20))
         pi_values.append(policy.get_Pi_values(env, 10))
