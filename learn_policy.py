@@ -141,7 +141,7 @@ def learn(policy_name="DDPG",
         new_obs, reward, done, _ = env.step(action)
 
         if filter is not None:
-            if filter.isOut(new_obs):
+            if filter.isOut(new_obs) and filter.isOunt(obs):
                 rb.push(obs, action, reward, done, new_obs)
                 episode_timesteps += 1
                 total_timesteps += 1
