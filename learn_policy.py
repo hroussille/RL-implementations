@@ -86,6 +86,7 @@ def learn(policy_name="DDPG",
     q_values = []
     pi_values = []
     env = gym.make(environment)
+    eval_env = gym.make(environment)
 
     file_name = "%s_%s" % (policy_name, environment)
 
@@ -95,6 +96,7 @@ def learn(policy_name="DDPG",
 
     # Set seeds
     env.seed(seed)
+    eval_env.seed(seed)
     torch.manual_seed(seed)
     np.random.seed(seed)
 
@@ -111,7 +113,10 @@ def learn(policy_name="DDPG",
     rb = replay_buffer.ReplayBuffer(buffer_size)
 
     # Evaluate untrained policy
-    evaluations = [evaluate_policy(policy,env)]
+    evaluations = [evaluate_policy(policy,eval_env)]
+    if state_dim <= 2:
+        q_values.append(policy.get_Q_values(env, 20))
+        pi_values.append(policy.get_Pi_values(env, 10))
 
 
     total_timesteps = 0
@@ -184,8 +189,7 @@ def learn(policy_name="DDPG",
         # Evaluate episode
         if timesteps_since_eval >= eval_freq:
             timesteps_since_eval %= eval_freq
-            evaluations.append(evaluate_policy(policy,env))
-            #np.save(evaluations_directory + "/%s" % (file_name), evaluations)
+            evaluations.append(evaluate_policy(policy,eval_env))
             if state_dim <= 2:
                 q_values.append(policy.get_Q_values(env, 20))
                 pi_values.append(policy.get_Pi_values(env, 10))
@@ -211,8 +215,7 @@ def learn(policy_name="DDPG",
         timesteps_since_eval += 1
 
     # Final evaluation
-    evaluations.append(evaluate_policy(policy,env))
-    evaluations = np.array(evaluations)
+    evaluations.append(evaluate_policy(policy,eval_env))
     if state_dim <= 2:
         q_values.append(policy.get_Q_values(env, 20))
         pi_values.append(policy.get_Pi_values(env, 10))
