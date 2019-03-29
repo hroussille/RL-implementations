@@ -133,13 +133,15 @@ def learn(policy_name="DDPG",
 
     while total_timesteps < exploration_timesteps:
 
+        push = True
+
+        if exploration_mode == "uniform":
+            obs = env.observation_space.sample()
+
         if done:
             # Reset environment
             if exploration_mode == "sequential":
                 obs = env.reset()
-
-            elif exploration_mode == "uniform":
-                obs = env.observation_space.sample()
 
             done = False
             episode_reward = 0
@@ -160,17 +162,13 @@ def learn(policy_name="DDPG",
             new_obs, reward, done, _ = env.step(action)
 
         elif exploration_mode == "uniform":
-            new_obs, reward, done, _ = env.step(action, forced_state=obs)
+            new_obs, reward, done, _ = env.sample_step(obs, action)
 
         if filter is not None:
-            if filter.isOut(new_obs) and filter.isOut(obs):
-                rb.push(obs, action, reward, done, new_obs)
-                episode_timesteps += 1
-                total_timesteps += 1
-                timesteps_since_eval += 1
-                episode_reward += reward
-                obs = new_obs
-        else:
+            if filter.isIn(new_obs) or filter.isIn(obs):
+                push = False
+
+        if push is True:
             rb.push(obs, action, reward, done, new_obs)
             episode_reward += reward
             episode_timesteps += 1
