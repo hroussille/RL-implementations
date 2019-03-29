@@ -10,12 +10,12 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Paper: https://arxiv.org/abs/1802.09477
 
 class Actor(nn.Module):
-    def __init__(self, state_dim, action_dim, max_action):
+    def __init__(self, state_dim, action_dim, max_action, nn_dim):
         super(Actor, self).__init__()
 
-        self.l1 = nn.Linear(state_dim, 100)
-        self.l2 = nn.Linear(100, 50)
-        self.l3 = nn.Linear(50, action_dim)
+        self.l1 = nn.Linear(state_dim, nn_dim[0])
+        self.l2 = nn.Linear(nn_dim[0], nn_dim[1])
+        self.l3 = nn.Linear(nn_dim[1], action_dim)
 
         self.max_action = max_action
 
@@ -28,18 +28,18 @@ class Actor(nn.Module):
 
 
 class Critic(nn.Module):
-    def __init__(self, state_dim, action_dim):
+    def __init__(self, state_dim, action_dim, nn_dim):
         super(Critic, self).__init__()
 
         # Q1 architecture
-        self.l1 = nn.Linear(state_dim + action_dim, 400)
-        self.l2 = nn.Linear(400, 300)
-        self.l3 = nn.Linear(300, 1)
+        self.l1 = nn.Linear(state_dim + action_dim, nn_dim[0])
+        self.l2 = nn.Linear(nn_dim[0], nn_dim[1])
+        self.l3 = nn.Linear(nn_dim[1], 1)
 
         # Q2 architecture
-        self.l4 = nn.Linear(state_dim + action_dim, 400)
-        self.l5 = nn.Linear(400, 300)
-        self.l6 = nn.Linear(300, 1)
+        self.l4 = nn.Linear(state_dim + action_dim, nn_dim[0])
+        self.l5 = nn.Linear(nn_dim[0], nn_dim[1])
+        self.l6 = nn.Linear(nn_dim[1], 1)
 
 
     def forward(self, x, u):
@@ -66,14 +66,15 @@ class Critic(nn.Module):
 
 class TD3(object):
 
-    def __init__(self, state_dim, action_dim, max_action,learning_rate=1e-4):
+    def __init__(self, state_dim, action_dim, max_action, actor_dim=(40,30),
+            critic_dim=(40,30),learning_rate=1e-4):
 
-        self.actor = Actor(state_dim, action_dim, max_action).to(device)
-        self.actor_target = Actor(state_dim, action_dim, max_action).to(device)
+        self.actor = Actor(state_dim, action_dim, max_action, actor_dim).to(device)
+        self.actor_target = Actor(state_dim, action_dim, max_action, actor_dim).to(device)
         self.actor_target.load_state_dict(self.actor.state_dict())
         self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr=learning_rate)
-        self.critic = Critic(state_dim, action_dim).to(device)
-        self.critic_target = Critic(state_dim, action_dim).to(device)
+        self.critic = Critic(state_dim, action_dim, critic_dim).to(device)
+        self.critic_target = Critic(state_dim, action_dim, critic_dim).to(device)
         self.critic_target.load_state_dict(self.critic.state_dict())
         self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), lr=learning_rate, weight_decay=1e-4)
         self.max_action = max_action
