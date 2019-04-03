@@ -2,5 +2,6 @@
 *.swp
 *.egg-info
 results/
+logs/
 *.pth
 *.gif

@@ -169,7 +169,7 @@ class TD3(object):
             current_Q1,current_Q2 = self.critic(torch_state,torch_action)
             cpu_Q1 = np.asscalar(current_Q1.detach().cpu().numpy())
             cpu_Q2 = np.asscalar(current_Q2.detach().cpu().numpy())
-            q_value = [np.min(cpu_Q1,cpu_Q2)]
+            q_value = [min(cpu_Q1,cpu_Q2)]
             q_value.extend(state)
             action = torch_action.detach().cpu().numpy()
             Q_values.append(q_value)
