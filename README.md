@@ -1,6 +1,6 @@
 # RL-implementations
 
-The DDPG / TD3 implementations are originally from : [this repository](https://github.com/whikwon/TD3)
+The DDPG / TD3 implementations are originally from : [this repository](https://github.com/sfujim/TD3)
 
 ## Usage Examples
 
