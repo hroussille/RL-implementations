@@ -84,7 +84,8 @@ def learn(policy_name="DDPG",
             policy_noise=0.2,
             noise_clip=0.5,
             policy_freq=2,
-            filter=None):
+            filter=None,
+            render=True):
 
     q_values = []
     pi_values = []
@@ -155,8 +156,11 @@ def learn(policy_name="DDPG",
                     elif exploration_mode == "uniform":
                         obs = env.observation_space.sample()
 
-        action = env.action_space.sample()
+        if render:
+            env.render()
 
+        action = env.action_space.sample()
+        
         # Perform action
         if exploration_mode == "sequential":
             new_obs, reward, done, _ = env.step(action)
@@ -208,7 +212,10 @@ def learn(policy_name="DDPG",
             if state_dim <= 2:
                 q_values.append(policy.get_Q_values(env, 20))
                 pi_values.append(policy.get_Pi_values(env, 10))
-                
+        
+        if render:
+            env.render()
+       
         # Select action randomly or according to policy
         action = policy.select_action(np.array(obs))
 
@@ -267,7 +274,6 @@ if __name__ == "__main__":
     parser.add_argument("--learning_timesteps", default=1e4, type=int)
     parser.add_argument("--buffer_size", default=5000, type=int)
     parser.add_argument("--no-new-exp", dest='new_exp', action="store_false")
-    parser.set_defaults(new_exp=True)
     parser.add_argument("--expl_noise", default=0.1, type=float)    #noise
     parser.add_argument("--batch_size", default=64, type=int)      #learning batch
     parser.add_argument("--discount", default=0.99, type=float)     #discount factor
@@ -280,6 +286,10 @@ if __name__ == "__main__":
     parser.add_argument("--policy_noise", default=0.2, type=float)  #noise added to target policy during critic update
     parser.add_argument("--noise_clip", default=0.5, type=float)    #range to clip target policy noise
     parser.add_argument("--policy_freq", default=2, type=int)       #frequency of delayed policy updates
+    parser.add_argument("--no-render", dest="render", action="store_false")       #rednering
+
+    parser.set_defaults(new_exp=True)
+    parser.set_defaults(render=True)
     
     args = parser.parse_args()
 
@@ -302,5 +312,6 @@ if __name__ == "__main__":
             tau=args.tau,
             policy_noise=args.policy_noise,
             noise_clip=args.noise_clip,
-            policy_freq=args.policy_freq)
+            policy_freq=args.policy_freq,
+            render=args.render)
 
