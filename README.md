@@ -11,7 +11,7 @@ _**Warning:**  This code is intended to be run from a [higher level implementati
 To learn a policy with one of the algorithm , one must run :
 
 ```sh
-python learn_policy.py --policy_name DDPG --environment 'MountainCarContinuous-v0'
+python learn_policy.py --algorithm DDPG --environment 'MountainCarContinuous-v0'
 ```
 For a comprehensive summary of all the parameters and their description please run :
 ```sh
@@ -23,7 +23,7 @@ python learn_policy.py --help
 _**Warning:**  This code is intended to be run from a [higher level implementations]([https://github.com/schott97l/RL_analysis](https://github.com/schott97l/RL_analysis))._
 
 ```sh
-python run_policy.py --policy_name DDPG --environment 'MountainCarContinuous-v0'
+python run_policy.py --algorithm DDPG --environment 'MountainCarContinuous-v0'
 ```
 
 ### Reminder
