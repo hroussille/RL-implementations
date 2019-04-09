@@ -7,7 +7,7 @@ from implementations.algorithms import DDPG
 from implementations.utils import replay_buffer
 
 
-def run_policy(policy_name="Random",policy_directory="policies",environment=None,
+def run_policy(algorithm="Random",policy_directory="policies",environment=None,
         max_episodes=50,buffer_size=5000,render=True,verbose=True):
 
     env = gym.make(environment)
@@ -16,14 +16,14 @@ def run_policy(policy_name="Random",policy_directory="policies",environment=None
     action_dim = env.action_space.shape[0]
     max_action = float(env.action_space.high[0])
 
-    if policy_name == "Random":
+    if algorithm == "Random":
         pass
     else:
-        if policy_name == "TD3":
+        if algorithm == "TD3":
             policy = TD3.TD3(state_dim,action_dim,max_action)
-        elif policy_name == "DDPG":
+        elif algorithm == "DDPG":
             policy = DDPG.DDPG(state_dim,action_dim,max_action)
-        policy.load(policy_name + "_" + environment,policy_directory)
+        policy.load(algorithm + "_" + environment,policy_directory)
 
     rb = replay_buffer.ReplayBuffer(buffer_size)
     old_state = None
@@ -36,7 +36,7 @@ def run_policy(policy_name="Random",policy_directory="policies",environment=None
         while not done:
             if render:
                 env.render()
-            if policy_name == "Random" :
+            if algorithm == "Random" :
                 action = env.action_space.sample()
             else:
                 action = policy.select_action(np.array(old_state))
@@ -65,19 +65,19 @@ def run_policy(policy_name="Random",policy_directory="policies",environment=None
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--policy_name",default="Random")
+    parser.add_argument("--algorithm",default="Random")
     parser.add_argument("--policy_directory", default="policies")
     parser.add_argument("--environment", default="MountainCarContinuous-v0")
     parser.add_argument("--max_episodes", default=50, type=int)
     parser.add_argument("--buffer_size", default=5000, type=int)
     parser.add_argument('--quiet', dest='verbose', action='store_false')
     parser.set_defaults(verbose=True)
-    parser.add_argument('--no-render', dest='render', action='store_false')
+    parser.add_argument('--no_render', dest='render', action='store_false')
     parser.set_defaults(render=True)
 
     args = parser.parse_args()
     
-    run_policy(policy_name=args.policy_name,
+    run_policy(algorithm=args.algorithm,
             policy_directory=args.policy_directory,
             environment=args.environment,
             max_episodes=args.max_episodes,

@@ -5,9 +5,47 @@ import os
 import argparse
 import matplotlib.pyplot as plt
 
+import json
+
 from implementations.algorithms import DDPG
 from implementations.algorithms import TD3
 from implementations.utils import replay_buffer
+
+def populate_output_dir(path, exist):
+    if exist is False:
+        os.makedirs(path)
+
+    os.makedirs(path + "/models")
+    os.makedirs(path + "/visualizations")
+    os.makedirs(path + "/logs")
+
+
+def setup_output_dir(path):
+
+    new_path = path
+    exist = os.path.exists(new_path)
+    i=1
+
+    while exist:
+        """
+        if os.path.isdir(new_path) is False:
+            print("Output path : {} already exist and is not a directory".format(path))
+            return False
+
+        if len(os.listdir(new_path)) != 0:
+            print("Output directory : {} already exists and is not empty".format(path))
+            return False
+        """
+        new_path = path + "_{}".format(i)
+        exist = os.path.exists(new_path)
+        i+=1
+
+    populate_output_dir(new_path, exist)
+    return new_path
+
+def save_arguments(args, path):
+    with open(path + '/arguments.txt', 'w') as file:
+        file.write(json.dumps(args))
 
 def visualize_training(evaluations, freq=1, save=False, path=''):
     x = np.arange(0, freq * len(evaluations), freq)
@@ -22,7 +60,7 @@ def visualize_training(evaluations, freq=1, save=False, path=''):
 
 
 # Runs policy for X episodes and returns average reward
-def evaluate_policy(policy, env, eval_episodes=100):
+def evaluate_policy(policy, env, verbose,eval_episodes=100):
     avg_reward = 0.
     total_steps = 0
 
@@ -54,17 +92,16 @@ def evaluate_policy(policy, env, eval_episodes=100):
     avg_reward = np.sum(records) / total_steps
     error = np.std(records / steps)
 
-    print ("---------------------------------------")
-    print ("Evaluation over %d episodes: %f" % (eval_episodes, avg_reward))
-    print ("---------------------------------------")
+    if verbose:
+        print ("---------------------------------------")
+        print ("Evaluation over %d episodes: %f" % (eval_episodes, avg_reward))
+        print ("---------------------------------------")
 
     return np.array([avg_reward, error])
 
 
-def learn(policy_name="DDPG",
-            policy_directory='policies',
-            logs_directory='logs',
-            visualizations_directory='visualizations',
+def learn(algorithm="DDPG",
+            output='results',
             save=False,
             seed=0,
             environment=None,
@@ -85,6 +122,7 @@ def learn(policy_name="DDPG",
             noise_clip=0.5,
             policy_freq=2,
             filter=None,
+            verbose=True,
             render=True):
 
     q_values = []
@@ -92,11 +130,12 @@ def learn(policy_name="DDPG",
     env = gym.make(environment)
     eval_env = gym.make(environment)
 
-    file_name = "%s_%s" % (policy_name, environment)
+    file_name = "%s_%s" % (algorithm, environment)
 
-    print ("---------------------------------------")
-    print ("Settings: %s" % (file_name))
-    print ("---------------------------------------")
+    if verbose:
+        print ("---------------------------------------")
+        print ("Settings: %s" % (file_name))
+        print ("---------------------------------------")
 
     # Set seeds
     env.seed(seed)
@@ -109,7 +148,7 @@ def learn(policy_name="DDPG",
     max_action = float(env.action_space.high[0])
 
     # Initialize policy
-    if policy_name == "TD3":
+    if algorithm == "TD3":
         policy = TD3.TD3(state_dim, action_dim, max_action, actor_dim=actor_dim,
                 critic_dim=critic_dim, learning_rate=learning_rate)
     else:
@@ -119,7 +158,7 @@ def learn(policy_name="DDPG",
     rb = replay_buffer.ReplayBuffer(buffer_size)
 
     # Evaluate untrained policy
-    evaluations = [evaluate_policy(policy,eval_env)]
+    evaluations = [evaluate_policy(policy,eval_env,verbose)]
     if state_dim <= 2:
         q_values.append(policy.get_Q_values(env, 20))
         pi_values.append(policy.get_Pi_values(env, 10))
@@ -191,9 +230,10 @@ def learn(policy_name="DDPG",
 
         if done:
             if total_timesteps != 0:
-                print("Total T: {} Episode Num: {} Episode T: {} Reward: {}".format(total_timesteps, episode_num, episode_timesteps, episode_reward))
+                if verbose:
+                    print("Total T: {} Episode Num: {} Episode T: {} Reward: {}".format(total_timesteps, episode_num, episode_timesteps, episode_reward))
 
-                if policy_name == "TD3":
+                if algorithm == "TD3":
                     policy.train(rb, episode_timesteps, batch_size, discount, tau, policy_noise, noise_clip, policy_freq)
                 else:
                     policy.train(rb, episode_timesteps, batch_size, discount, tau)
@@ -208,7 +248,7 @@ def learn(policy_name="DDPG",
         # Evaluate episode
         if timesteps_since_eval >= eval_freq:
             timesteps_since_eval %= eval_freq
-            evaluations.append(evaluate_policy(policy,eval_env))
+            evaluations.append(evaluate_policy(policy,eval_env,verbose))
             if state_dim <= 2:
                 q_values.append(policy.get_Q_values(env, 20))
                 pi_values.append(policy.get_Pi_values(env, 10))
@@ -237,35 +277,40 @@ def learn(policy_name="DDPG",
         timesteps_since_eval += 1
 
     # Final evaluation
-    evaluations.append(evaluate_policy(policy,eval_env))
+    evaluations.append(evaluate_policy(policy,eval_env,verbose))
     evaluations = np.array(evaluations)
     if state_dim <= 2:
         q_values.append(policy.get_Q_values(env, 20))
         pi_values.append(policy.get_Pi_values(env, 10))
 
+    if save:
+        if not os.path.exists(output+"/models"):
+            os.makedirs(output+"/models")
 
-    if not os.path.exists(policy_directory):
-        os.makedirs(policy_directory)
+        policy.save("%s" % (file_name), directory=output+"/models/")
 
-    policy.save("%s" % (file_name), directory=policy_directory)
+        if not os.path.exists(output + "/logs"):
+            os.makedirs(output + "/logs")
 
-    if not os.path.exists(logs_directory):
-        os.makedirs(logs_directory)
+        np.save(output + "/logs/evaluations", evaluations)
+        np.save(output + "/logs/q_values", q_values)
+        np.save(output + "/logs/pi_values", pi_values)
+        np.save(output + "/logs/replay_buffer", rb)
 
-    np.save(logs_directory + "/evaluations", evaluations)
-    np.save(logs_directory + "/q_values", q_values)
-    np.save(logs_directory + "/pi_values", pi_values)
-    np.save(logs_directory + "/replay_buffer", rb)
+    if save:
+        if not os.path.exists(output + "/visualizations"):
+            os.makedirs(output + "/visualizations")
 
-    visualize_training(evaluations, eval_freq, save, visualizations_directory)
+    visualize_training(evaluations, eval_freq, save, output+"/visualizations")
 
     return rb, q_values, pi_values
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--policy_name",default="DDPG")
-    parser.add_argument("--policy_directory", default="policies")
+    parser.add_argument("--algorithm",default="DDPG")
+    parser.add_argument("--output", default="results")
+    parser.add_argument('--save', dest='save', action='store_true')
     parser.add_argument("--seed", default=0, type=int)              #seed
     parser.add_argument("--environment", default="MountainCarContinuous-v0")
     parser.add_argument("--eval_freq", default=5e3, type=float)     #how often (time steps) we evaluate
@@ -273,7 +318,7 @@ if __name__ == "__main__":
     parser.add_argument("--exploration_mode", default="sequential", type=str)
     parser.add_argument("--learning_timesteps", default=1e4, type=int)
     parser.add_argument("--buffer_size", default=5000, type=int)
-    parser.add_argument("--no-new-exp", dest='new_exp', action="store_false")
+    parser.add_argument("--no_new_exp", dest='new_exp', action="store_false")
     parser.add_argument("--expl_noise", default=0.1, type=float)    #noise
     parser.add_argument("--batch_size", default=64, type=int)      #learning batch
     parser.add_argument("--discount", default=0.99, type=float)     #discount factor
@@ -286,15 +331,22 @@ if __name__ == "__main__":
     parser.add_argument("--policy_noise", default=0.2, type=float)  #noise added to target policy during critic update
     parser.add_argument("--noise_clip", default=0.5, type=float)    #range to clip target policy noise
     parser.add_argument("--policy_freq", default=2, type=int)       #frequency of delayed policy updates
-    parser.add_argument("--no-render", dest="render", action="store_false")       #rednering
+    parser.add_argument('--quiet', dest='verbose', action='store_false')
+    parser.add_argument("--no_render", dest="render", action="store_false")       #rednering
 
+    parser.set_defaults(save=False)
+    parser.set_defaults(verbose=True)
     parser.set_defaults(new_exp=True)
     parser.set_defaults(render=True)
     
     args = parser.parse_args()
 
-    learn(policy_name=args.policy_name,
-            policy_directory=args.policy_directory,
+    if args.save:
+        new_path = setup_output_dir(args.output)
+
+    learn(algorithm=args.algorithm,
+            output=new_path,
+            save=args.save,
             seed=args.seed,
             environment=args.environment,
             eval_freq=args.eval_freq,
@@ -313,5 +365,9 @@ if __name__ == "__main__":
             policy_noise=args.policy_noise,
             noise_clip=args.noise_clip,
             policy_freq=args.policy_freq,
+            verbose=args.verbose,
             render=args.render)
+
+    if args.save:
+        save_arguments(vars(args), new_path)
 
