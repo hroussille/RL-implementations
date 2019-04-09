@@ -303,6 +303,9 @@ def learn(algorithm="DDPG",
 
     visualize_training(evaluations, eval_freq, save, output+"/visualizations")
 
+    env.close()
+    eval_env.close()
+
     return rb, q_values, pi_values
 
 if __name__ == "__main__":
