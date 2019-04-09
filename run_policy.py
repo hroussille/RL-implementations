@@ -82,7 +82,7 @@ if __name__ == "__main__":
     parser.add_argument("--environment", default="MountainCarContinuous-v0")
     parser.add_argument("--max_episodes", default=50, type=int)
     parser.add_argument("--max_timesteps", default=1e4, type=int)
-    parser.add_argument("--buffer_size", default=5e3, type=int)
+    parser.add_argument("--buffer_size", default=5000, type=int)
     parser.add_argument('--quiet', dest='verbose', action='store_false')
     parser.add_argument('--no_render', dest='render', action='store_false')
 
