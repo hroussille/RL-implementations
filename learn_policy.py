@@ -50,7 +50,7 @@ def save_arguments(args, path):
 def visualize_training(evaluations, freq=1, save=False, path=''):
     x = np.arange(0, freq * len(evaluations), freq)
 
-    plt.errorbar(x, evaluations[:, 0], evaluations[:, 1], fmt="--o")
+    plt.plot(x, evaluations[:, 0], "-o")
     plt.title("Average reward per step")
 
     if save:
