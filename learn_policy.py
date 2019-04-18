@@ -22,26 +22,20 @@ def populate_output_dir(path, exist):
 
 def setup_output_dir(path):
 
-    new_path = path
-    exist = os.path.exists(new_path)
-    i=1
+    exist = os.path.exists(path)
 
-    while exist:
-        """
-        if os.path.isdir(new_path) is False:
+    if exist:
+        
+        if os.path.isdir(path) is False:
             print("Output path : {} already exist and is not a directory".format(path))
             return False
 
-        if len(os.listdir(new_path)) != 0:
+        if len(os.listdir(path)) != 0:
             print("Output directory : {} already exists and is not empty".format(path))
             return False
-        """
-        new_path = path + "_{}".format(i)
-        exist = os.path.exists(new_path)
-        i+=1
 
-    populate_output_dir(new_path, exist)
-    return new_path
+    populate_output_dir(path, exist)
+    return True
 
 def save_arguments(args, path):
     with open(path + '/arguments.txt', 'w') as file:
@@ -52,7 +46,7 @@ def visualize_training(evaluations, freq=1, save=False, path=''):
 
     plt.plot(x, evaluations[:, 0], "-o")
     plt.title("Average reward per step",fontsize=12)
-    plt.ticks_params(labelsize=12)
+    plt.tick_params(labelsize=12)
 
     if save:
         plt.savefig(path + "/scores.png")
@@ -346,10 +340,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.save:
-        new_path = setup_output_dir(args.output)
+        if not setup_output_dir(args.output):
+            exit()
 
     learn(algorithm=args.algorithm,
-            output=new_path,
+            output=args.output,
             save=args.save,
             seed=args.seed,
             environment=args.environment,
@@ -373,5 +368,5 @@ if __name__ == "__main__":
             render=args.render)
 
     if args.save:
-        save_arguments(vars(args), new_path)
+        save_arguments(vars(args), args.output)
 
