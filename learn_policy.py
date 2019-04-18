@@ -50,8 +50,8 @@ def visualize_training(evaluations, freq=1, save=False, path=''):
 
     if save:
         plt.savefig(path + "/scores.png")
-
-    plt.show()
+    else:
+        plt.show()
 
 
 # Runs policy for X episodes and returns average reward
