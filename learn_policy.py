@@ -45,8 +45,8 @@ def visualize_training(evaluations, freq=1, save=False, path=''):
     x = np.arange(0, freq * len(evaluations), freq)
 
     plt.plot(x, evaluations[:, 0], "-o")
-    plt.title("Average reward per step",fontsize=12)
-    plt.tick_params(labelsize=12)
+    plt.title("Average reward per step",fontsize=14)
+    plt.tick_params(labelsize=14)
 
     if save:
         plt.savefig(path + "/scores.png")
