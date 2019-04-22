@@ -116,6 +116,8 @@ def learn(algorithm="DDPG",
             policy_noise=0.2,
             noise_clip=0.5,
             policy_freq=2,
+            save_q_pi_values=False,
+            save_replay_buffer=False,
             filter=None,
             verbose=True,
             render=True):
@@ -154,7 +156,7 @@ def learn(algorithm="DDPG",
 
     # Evaluate untrained policy
     evaluations = [evaluate_policy(policy,eval_env,verbose)]
-    if state_dim <= 2:
+    if save_q_pi_values:
         q_values.append(policy.get_Q_values(env, 20))
         pi_values.append(policy.get_Pi_values(env, 10))
 
@@ -244,7 +246,7 @@ def learn(algorithm="DDPG",
         if timesteps_since_eval >= eval_freq:
             timesteps_since_eval %= eval_freq
             evaluations.append(evaluate_policy(policy,eval_env,verbose))
-            if state_dim <= 2:
+            if save_q_pi_values:
                 q_values.append(policy.get_Q_values(env, 20))
                 pi_values.append(policy.get_Pi_values(env, 10))
         
@@ -274,7 +276,7 @@ def learn(algorithm="DDPG",
     # Final evaluation
     evaluations.append(evaluate_policy(policy,eval_env,verbose))
     evaluations = np.array(evaluations)
-    if state_dim <= 2:
+    if save_q_pi_values:
         q_values.append(policy.get_Q_values(env, 20))
         pi_values.append(policy.get_Pi_values(env, 10))
 
@@ -288,9 +290,11 @@ def learn(algorithm="DDPG",
             os.makedirs(output + "/logs")
 
         np.save(output + "/logs/evaluations", evaluations)
-        np.save(output + "/logs/q_values", q_values)
-        np.save(output + "/logs/pi_values", pi_values)
-        np.save(output + "/logs/replay_buffer", rb)
+        if save_q_pi_values:
+            np.save(output + "/logs/q_values", q_values)
+            np.save(output + "/logs/pi_values", pi_values)
+        if save_replay_buffer:
+            np.save(output + "/logs/replay_buffer", rb)
 
     if save:
         if not os.path.exists(output + "/visualizations"):
@@ -329,6 +333,8 @@ if __name__ == "__main__":
     parser.add_argument("--policy_noise", default=0.2, type=float)  #noise added to target policy during critic update
     parser.add_argument("--noise_clip", default=0.5, type=float)    #range to clip target policy noise
     parser.add_argument("--policy_freq", default=2, type=int)       #frequency of delayed policy updates
+    parser.add_argument("--save_q_pi_values", dest="save_q_pi_values", action="store_true")       #frequency of delayed policy updates
+    parser.add_argument("--save_replay_buffer", dest="save_replay_buffer", action="store_true")       #frequency of delayed policy updates
     parser.add_argument('--quiet', dest='verbose', action='store_false')
     parser.add_argument("--no_render", dest="render", action="store_false")       #rednering
 
@@ -336,6 +342,8 @@ if __name__ == "__main__":
     parser.set_defaults(verbose=True)
     parser.set_defaults(new_exp=True)
     parser.set_defaults(render=True)
+    parser.set_defaults(save_q_pi_values=False)
+    parser.set_defaults(save_replay_buffer=False)
     
     args = parser.parse_args()
 
@@ -364,6 +372,8 @@ if __name__ == "__main__":
             policy_noise=args.policy_noise,
             noise_clip=args.noise_clip,
             policy_freq=args.policy_freq,
+            save_q_pi_values=args.save_q_pi_values,
+            save_replay_buffer=args.save_replay_buffer,
             verbose=args.verbose,
             render=args.render)
 
